@@ -1,0 +1,3236 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบบริหารจัดการโรคเบาหวาน รพ.สต.บ้านคำใหญ่</title>
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- SheetJS for Excel import -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root {
+  --primary-green: #1a8754;
+  --primary-blue: #0d6efd;
+  --light-green: #d4edda;
+  --light-blue: #d1ecf1;
+  --gradient: linear-gradient(135deg, #1a8754 0%, #0d6efd 100%);
+  --bg-soft: #f0f8f4;
+}
+* { font-family: 'Sarabun', sans-serif; }
+body {
+  background: var(--bg-soft);
+  min-height: 100vh;
+  margin: 0;
+}
+.navbar-custom {
+  background: var(--gradient);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link { color: #fff !important; }
+.navbar-custom .nav-link:hover { opacity: .85; }
+
+.login-wrap {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gradient);
+  padding: 1rem;
+}
+.login-card {
+  width: 100%; max-width: 420px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  border: 0;
+}
+.login-header {
+  background: var(--gradient);
+  color: #fff; text-align: center;
+  padding: 2rem 1rem; border-radius: 16px 16px 0 0;
+}
+.login-header i { font-size: 3rem; }
+
+.btn-primary-custom {
+  background: var(--gradient);
+  color: #fff; border: 0;
+  padding: .65rem 1.25rem;
+  border-radius: 10px; font-weight: 500;
+}
+.btn-primary-custom:hover { opacity: .92; color: #fff; }
+
+.card-stat {
+  border: 0; border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  transition: transform .15s;
+}
+.card-stat:hover { transform: translateY(-3px); }
+.card-stat .icon-wrap {
+  width: 52px; height: 52px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+}
+.bg-soft-green { background: var(--light-green); color: var(--primary-green); }
+.bg-soft-blue  { background: var(--light-blue);  color: var(--primary-blue); }
+.bg-soft-warn  { background: #fff3cd; color: #856404; }
+.bg-soft-red   { background: #f8d7da; color: #721c24; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+.nav-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff; box-shadow: 0 -2px 8px rgba(0,0,0,0.08);
+  display: none; z-index: 1030;
+}
+.nav-bottom .nav-item {
+  flex: 1; text-align: center; padding: .6rem .25rem;
+  color: #6c757d; cursor: pointer; font-size: .78rem;
+}
+.nav-bottom .nav-item.active { color: var(--primary-green); }
+.nav-bottom .nav-item i { font-size: 1.4rem; display: block; }
+
+@media (max-width: 768px) {
+  .nav-bottom { display: flex; }
+  main { padding-bottom: 70px; }
+  .desktop-only { display: none !important; }
+}
+
+.form-section-title {
+  color: var(--primary-green);
+  font-weight: 600;
+  border-bottom: 2px solid var(--primary-green);
+  padding-bottom: .35rem; margin: 1.25rem 0 .75rem;
+}
+.pillar-card {
+  border: 2px solid transparent;
+  border-radius: 12px;
+  transition: all .15s;
+  padding: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 1rem;
+}
+.pillar-card:hover { border-color: var(--primary-green); }
+.pillar-icon {
+  width: 48px; height: 48px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; color: #fff; margin-bottom: .5rem;
+}
+
+.chip {
+  display: inline-block; padding: .25rem .7rem;
+  border-radius: 20px; font-size: .8rem; font-weight: 500;
+}
+.chip-green { background: var(--light-green); color: var(--primary-green); }
+.chip-blue  { background: var(--light-blue);  color: var(--primary-blue); }
+
+.footer-copy {
+  text-align: center; padding: 1rem;
+  background: #fff; border-top: 1px solid #e9ecef;
+  color: #6c757d; font-size: .85rem;
+}
+.patient-card {
+  border: 0; border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  cursor: pointer; transition: all .15s;
+  margin-bottom: .75rem;
+}
+.patient-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); transform: translateY(-2px); }
+.avatar-circle {
+  width: 50px; height: 50px; border-radius: 50%;
+  background: var(--gradient); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600; font-size: 1.1rem; flex-shrink: 0;
+}
+
+.stage-stepper { display:flex; gap:.5rem; flex-wrap:wrap; margin:1rem 0; }
+.stage-step {
+  flex: 1 1 140px; min-width: 120px; padding: .75rem;
+  border: 2px solid #dee2e6; border-radius: 10px;
+  cursor: pointer; text-align: center; background: #fff;
+  transition: all .15s; position: relative;
+}
+.stage-step:hover { border-color: var(--primary-green); }
+.stage-step.selected {
+  background: linear-gradient(135deg,#1a8754,#0d6efd);
+  color: #fff; border-color: var(--primary-green);
+  box-shadow: 0 4px 12px rgba(26,135,84,0.3);
+}
+.stage-step .stage-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #e9ecef; color: #495057;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto .25rem; font-weight: 700;
+}
+.stage-step.selected .stage-num { background: #fff; color: var(--primary-green); }
+.stage-step small { opacity: .85; font-size: .72rem; line-height: 1.1; display: block; }
+.mi-card {
+  border-left: 4px solid var(--primary-green);
+  background: #f0f8f4; padding: .85rem 1rem;
+  border-radius: 8px; margin-bottom: .75rem;
+}
+.mi-card h6 { color: var(--primary-green); margin-bottom: .4rem; font-weight: 600; }
+.mi-card .oars-tag {
+  display: inline-block; padding: .15rem .55rem;
+  border-radius: 12px; font-size: .72rem; font-weight: 600;
+  background: var(--primary-green); color: #fff; margin-right: .25rem;
+}
+.range-label { font-weight: 600; color: var(--primary-green); font-size: 1.1rem; }
+.range-wrap input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 8px;
+  background: linear-gradient(to right, #dc3545, #ffc107, #1a8754);
+  border-radius: 5px; outline: none;
+}
+.range-wrap input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px;
+  border-radius: 50%; background: #fff;
+  border: 3px solid var(--primary-green); cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div id="loginPage" class="page active">
+  <div class="login-wrap">
+    <div class="card login-card">
+      <div class="login-header">
+        <i class="bi bi-heart-pulse-fill"></i>
+        <h4 class="mt-2 mb-1">ระบบบริหารจัดการโรคเบาหวาน</h4>
+        <small>รพ.สต.บ้านคำใหญ่ / พชต.คำใหญ่</small>
+      </div>
+      <div class="card-body p-4">
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-person-fill me-1"></i>ชื่อผู้ใช้ / เบอร์โทรศัพท์</label>
+          <input type="text" class="form-control form-control-lg" id="loginUser" placeholder="ชื่อผู้ใช้ หรือ เบอร์โทรศัพท์">
+        </div>
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-lock-fill me-1"></i>รหัสผ่าน</label>
+          <input type="password" class="form-control form-control-lg" id="loginPass" placeholder="รหัสผ่าน" onkeypress="if(event.key==='Enter') doLogin()">
+        </div>
+        <button class="btn btn-primary-custom w-100 btn-lg" onclick="doLogin()">
+          <i class="bi bi-box-arrow-in-right me-1"></i>เข้าสู่ระบบ
+        </button>
+        <div class="text-center mt-3">
+          <button class="btn btn-outline-success btn-sm" onclick="openRegisterModal()">
+            <i class="bi bi-person-plus-fill me-1"></i>สมัครใช้งานใหม่
+          </button>
+        </div>
+        <div class="text-center mt-3 small text-muted">
+          บัญชีเริ่มต้น (ระบบ): admin/admin123<br>
+          <span class="text-secondary">ผู้สมัครใหม่ต้องรอผู้ดูแลระบบอนุมัติก่อนเข้าใช้งาน</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="appPage" class="page">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#" onclick="showPage('dashboard'); return false;">
+        <i class="bi bi-heart-pulse-fill me-1"></i>
+        <span class="d-none d-md-inline">ระบบโรคเบาหวาน รพ.สต.คำใหญ่</span>
+        <span class="d-md-none">DM-คำใหญ่</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav me-auto desktop-only">
+          <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('dashboard'); return false;"><i class="bi bi-speedometer2"></i> แดชบอร์ด</a></li>
+          <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('remission'); return false;"><i class="bi bi-heart-fill"></i> DM Remission</a></li>
+          <li class="nav-item" id="menuPatients"><a class="nav-link" href="#" onclick="showPage('patients'); return false;"><i class="bi bi-people-fill"></i> ผู้ป่วย</a></li>
+          <li class="nav-item" id="menuPatientForm"><a class="nav-link" href="#" onclick="openNewPatientForm(); return false;"><i class="bi bi-person-plus-fill"></i> เพิ่มผู้ป่วย</a></li>
+          <li class="nav-item" id="menuUsers" style="display:none;"><a class="nav-link" href="#" onclick="showPage('users'); return false;"><i class="bi bi-people"></i> จัดการผู้ใช้ <span id="pendingBadge" class="badge bg-danger" style="display:none;">0</span></a></li>
+          <li class="nav-item" id="menuLog"><a class="nav-link" href="#" onclick="showPage('auditLog'); return false;"><i class="bi bi-shield-check"></i> Log</a></li>
+        </ul>
+        <div class="d-flex align-items-center text-white">
+          <div class="dropdown me-3">
+            <a class="text-white text-decoration-none dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> <span id="userInfo">-</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" onclick="openChangePasswordModal(); return false;"><i class="bi bi-key-fill"></i> เปลี่ยนรหัสผ่าน</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="#" onclick="doLogout(); return false;"><i class="bi bi-box-arrow-right"></i> ออกจากระบบ</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container-fluid py-3">
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <div id="dashboardPage" class="subpage">
+      <h4 class="mb-3"><i class="bi bi-speedometer2 text-success"></i> แดชบอร์ดภาพรวม</h4>
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-green me-3"><i class="bi bi-people-fill"></i></div>
+              <div>
+                <div class="text-muted small">ผู้ป่วยทั้งหมด</div>
+                <h4 class="mb-0" id="statTotal">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-blue me-3"><i class="bi bi-clipboard-pulse"></i></div>
+              <div>
+                <div class="text-muted small">เยี่ยมเดือนนี้</div>
+                <h4 class="mb-0" id="statMonth">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-warn me-3"><i class="bi bi-droplet-half"></i></div>
+              <div>
+                <div class="text-muted small">DTX สูง (≥180)</div>
+                <h4 class="mb-0" id="statDtx">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-red me-3"><i class="bi bi-heart-pulse"></i></div>
+              <div>
+                <div class="text-muted small">BP สูง (≥140/90)</div>
+                <h4 class="mb-0" id="statBp">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mt-2">
+        <div class="col-12 col-lg-7">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="text-success"><i class="bi bi-bar-chart-line"></i> จำนวนผู้ป่วยแยกตามหมู่บ้าน</h6>
+              <canvas id="villageChart" height="140"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-5">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="text-success"><i class="bi bi-list-ul"></i> รายชื่อหมู่บ้านในตำบลคำใหญ่</h6>
+              <div id="villageList" class="small"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== DM REMISSION DASHBOARD ===================== -->
+    <div id="remissionPage" class="subpage" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-heart-fill text-danger"></i> Dashboard DM Remission</h4>
+        <button class="btn btn-outline-secondary btn-sm" onclick="loadRemission()"><i class="bi bi-arrow-clockwise"></i> รีเฟรช</button>
+      </div>
+
+      <div class="alert alert-info small mb-3">
+        <i class="bi bi-info-circle"></i> <strong>นิยาม DM Remission:</strong>
+        HbA1c &lt; 6.5% โดยไม่ใช้ยาเบาหวานอย่างน้อย 3 เดือน
+        — ดำเนินการผ่านการปรับพฤติกรรมตามหลักเวชศาสตร์วิถีชีวิต 6 เสาหลัก
+      </div>
+
+      <!-- ภาพรวมตำบล -->
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-green me-3"><i class="bi bi-heart-fill"></i></div>
+              <div>
+                <div class="text-muted small">อัตรา Remission</div>
+                <h4 class="mb-0 text-success"><span id="rmRate">0</span>%</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-blue me-3"><i class="bi bi-droplet-fill"></i></div>
+              <div>
+                <div class="text-muted small">HbA1c เฉลี่ย</div>
+                <h4 class="mb-0"><span id="rmAvgHbA1c">-</span><small>%</small></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-green me-3"><i class="bi bi-stars"></i></div>
+              <div>
+                <div class="text-muted small">6 เสาหลัก เฉลี่ย</div>
+                <h4 class="mb-0"><span id="rmAvgPillars">-</span><small>/60</small></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="card card-stat p-3">
+            <div class="d-flex align-items-center">
+              <div class="icon-wrap bg-soft-warn me-3"><i class="bi bi-people-fill"></i></div>
+              <div>
+                <div class="text-muted small">ผู้ป่วย (มีข้อมูล Lab)</div>
+                <h4 class="mb-0"><span id="rmWithHbA1c">0</span>/<span id="rmTotal">0</span></h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- กราฟสรุปตำบล -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="text-success"><i class="bi bi-pie-chart-fill"></i> ระดับ HbA1c ภาพรวมตำบล</h6>
+              <canvas id="rmHbA1cChart" height="200"></canvas>
+              <div class="mt-2 small">
+                <span class="chip" style="background:#28a745;color:#fff;">Remission &lt; 6.5</span>
+                <span class="chip" style="background:#17a2b8;color:#fff;">Good 6.5-7.0</span>
+                <span class="chip" style="background:#ffc107;color:#000;">Fair 7.0-8.0</span>
+                <span class="chip" style="background:#dc3545;color:#fff;">Poor ≥ 8.0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="text-success"><i class="bi bi-bullseye"></i> คะแนน 6 เสาหลัก ภาพรวมตำบล</h6>
+              <canvas id="rmPillarRadar" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stages of Change Distribution -->
+      <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="text-success"><i class="bi bi-compass"></i> Stages of Change ภาพรวมตำบล</h6>
+              <canvas id="rmStageChart" height="180"></canvas>
+              <div class="mt-2 small">
+                <span class="chip" style="background:#adb5bd;color:#fff;">1. เมินเฉย</span>
+                <span class="chip" style="background:#ffc107;color:#000;">2. ตระหนัก</span>
+                <span class="chip" style="background:#17a2b8;color:#fff;">3. เตรียมการ</span>
+                <span class="chip" style="background:#0d6efd;color:#fff;">4. ลงมือทำ</span>
+                <span class="chip" style="background:#28a745;color:#fff;">5. คงสภาพ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="text-success"><i class="bi bi-speedometer"></i> Readiness Index รายหมู่บ้าน</h6>
+              <canvas id="rmReadinessChart" height="180"></canvas>
+              <div class="mt-2 small text-muted">
+                Readiness = (Importance + Confidence) / 2 — สะท้อนความพร้อมในการเปลี่ยนแปลง
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ตาราง Stages รายหมู่บ้าน -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="text-success mb-3"><i class="bi bi-table"></i> Stages of Change รายหมู่บ้าน</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+              <thead class="table-light">
+                <tr class="small text-center">
+                  <th>หมู่บ้าน</th>
+                  <th>ผู้ป่วย</th>
+                  <th>ประเมินแล้ว</th>
+                  <th>1.เมินเฉย</th>
+                  <th>2.ตระหนัก</th>
+                  <th>3.เตรียมการ</th>
+                  <th>4.ลงมือทำ</th>
+                  <th>5.คงสภาพ</th>
+                  <th>Readiness</th>
+                </tr>
+              </thead>
+              <tbody id="rmStageTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- เปรียบเทียบรายหมู่บ้าน -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="text-success"><i class="bi bi-bar-chart-fill"></i> เปรียบเทียบอัตรา Remission รายหมู่บ้าน</h6>
+          <canvas id="rmVillageChart" height="80"></canvas>
+        </div>
+      </div>
+
+      <!-- ตารางรายหมู่บ้าน -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="text-success mb-3"><i class="bi bi-table"></i> สรุปรายหมู่บ้าน</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle">
+              <thead class="table-light">
+                <tr class="small text-center">
+                  <th rowspan="2" class="align-middle">หมู่บ้าน</th>
+                  <th rowspan="2" class="align-middle">ผู้ป่วย</th>
+                  <th colspan="4" style="background:#e8f5e9;">ระดับ HbA1c</th>
+                  <th rowspan="2" class="align-middle">HbA1c เฉลี่ย</th>
+                  <th rowspan="2" class="align-middle">%Remission</th>
+                  <th rowspan="2" class="align-middle">6 เสา เฉลี่ย</th>
+                </tr>
+                <tr class="small text-center">
+                  <th style="background:#28a74520;">Remission<br>&lt;6.5</th>
+                  <th style="background:#17a2b820;">Good<br>6.5-7.0</th>
+                  <th style="background:#ffc10730;">Fair<br>7.0-8.0</th>
+                  <th style="background:#dc354520;">Poor<br>≥8.0</th>
+                </tr>
+              </thead>
+              <tbody id="rmVillageTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ผู้ป่วยที่มีแนวโน้ม Remission -->
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body">
+          <h6 class="text-success mb-3"><i class="bi bi-trophy-fill"></i> ผู้ป่วยที่มี HbA1c ดีที่สุด (Remission Candidates)</h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover">
+              <thead class="table-light"><tr><th>#</th><th>HN</th><th>ชื่อ-สกุล</th><th>หมู่บ้าน</th><th>HbA1c ล่าสุด</th><th>6 เสา</th><th></th></tr></thead>
+              <tbody id="rmCandidatesTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== PATIENT LIST ===================== -->
+    <div id="patientsPage" class="subpage" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h4 class="mb-0"><i class="bi bi-people-fill text-success"></i> รายชื่อผู้ป่วย</h4>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-success" onclick="openImportModal('patient')" title="นำเข้าจาก Excel">
+            <i class="bi bi-file-earmark-excel"></i> นำเข้าผู้ป่วย
+          </button>
+          <button class="btn btn-outline-primary" onclick="openImportModal('lab')" title="นำเข้าผล Lab">
+            <i class="bi bi-file-earmark-medical"></i> นำเข้า Lab
+          </button>
+          <button class="btn btn-primary-custom" onclick="openNewPatientForm()">
+            <i class="bi bi-plus-lg"></i> เพิ่มผู้ป่วย
+          </button>
+        </div>
+      </div>
+      <div class="row g-2 mb-2">
+        <div class="col-md-5">
+          <input type="text" class="form-control" id="searchPatient" placeholder="ค้นหาชื่อ / HN / เลขบัตรประชาชน..." oninput="onPatientSearchInput()">
+        </div>
+        <div class="col-md-4">
+          <select class="form-select" id="filterVillage" onchange="loadPatients()">
+            <option value="all">ทุกหมู่บ้าน</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="sortPatient" onchange="applyPatientFilterSort()">
+            <option value="name">เรียงตาม: ชื่อ (ก-ฮ)</option>
+            <option value="hn">เรียงตาม: HN</option>
+            <option value="hba1c_desc">HbA1c ล่าสุด (มาก→น้อย)</option>
+            <option value="hba1c_asc">HbA1c ล่าสุด (น้อย→มาก)</option>
+            <option value="visit_desc">วันตรวจล่าสุด (ใหม่→เก่า)</option>
+            <option value="visit_asc">วันตรวจล่าสุด (เก่า→ใหม่)</option>
+          </select>
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+        <span class="small text-muted me-1"><i class="bi bi-funnel"></i> ตัวกรองด่วน:</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary quick-filter-btn active" data-filter="all" onclick="setQuickFilter('all')">ทั้งหมด <span class="badge bg-secondary" id="cntAll">0</span></button>
+        <button type="button" class="btn btn-sm btn-outline-warning quick-filter-btn" data-filter="notThisYear" onclick="setQuickFilter('notThisYear')">ยังไม่ตรวจปีนี้ <span class="badge bg-warning text-dark" id="cntNotThisYear">0</span></button>
+        <button type="button" class="btn btn-sm btn-outline-danger quick-filter-btn" data-filter="hba1cHigh" onclick="setQuickFilter('hba1cHigh')">HbA1c &gt; 8 <span class="badge bg-danger" id="cntHba1cHigh">0</span></button>
+        <button type="button" class="btn btn-sm btn-outline-danger quick-filter-btn" data-filter="bpHigh" onclick="setQuickFilter('bpHigh')">BP ไม่คุม <span class="badge bg-danger" id="cntBpHigh">0</span></button>
+        <div class="ms-auto small text-muted" id="patientListSummary"></div>
+      </div>
+      <div id="patientList"></div>
+      <div id="patientListSentinel" style="height:1px;"></div>
+      <div id="patientListPager" class="text-center text-muted small mt-2"></div>
+    </div>
+
+    <!-- ===================== PATIENT FORM ===================== -->
+    <div id="patientFormPage" class="subpage" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0"><i class="bi bi-person-plus-fill text-success"></i> <span id="patientFormTitle">เพิ่มผู้ป่วยใหม่</span></h4>
+        <button class="btn btn-outline-secondary btn-sm" onclick="showPage('patients')"><i class="bi bi-arrow-left"></i> ย้อนกลับ</button>
+      </div>
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <input type="hidden" id="pf_PatientID">
+          <div class="form-section-title"><i class="bi bi-person-vcard"></i> ข้อมูลส่วนตัว</div>
+          <div class="row g-2">
+            <div class="col-md-3"><label class="form-label">HN</label><input class="form-control" id="pf_HN"></div>
+            <div class="col-md-4"><label class="form-label">เลขบัตรประชาชน *</label><input class="form-control" id="pf_CID" maxlength="13"></div>
+            <div class="col-md-2"><label class="form-label">คำนำหน้า</label>
+              <select class="form-select" id="pf_Prefix">
+                <option>นาย</option><option>นาง</option><option>นางสาว</option><option>เด็กชาย</option><option>เด็กหญิง</option>
+              </select>
+            </div>
+            <div class="col-md-3"><label class="form-label">เพศ</label>
+              <select class="form-select" id="pf_Gender"><option>ชาย</option><option>หญิง</option></select>
+            </div>
+            <div class="col-md-6"><label class="form-label">ชื่อ *</label><input class="form-control" id="pf_FirstName"></div>
+            <div class="col-md-6"><label class="form-label">นามสกุล *</label><input class="form-control" id="pf_LastName"></div>
+            <div class="col-md-4"><label class="form-label">วันเกิด <small class="text-muted" id="pf_BirthDateBE"></small></label><input type="date" class="form-control" id="pf_BirthDate" onchange="onBirthDateChange()"></div>
+            <div class="col-md-2"><label class="form-label">อายุ <small class="text-muted">(อัตโนมัติจากวันเกิด)</small></label><input type="number" class="form-control" id="pf_Age"></div>
+            <div class="col-md-6"><label class="form-label">เบอร์โทร</label><input class="form-control" id="pf_Phone"></div>
+          </div>
+
+          <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> ที่อยู่</div>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">หมู่บ้าน *</label>
+              <select class="form-select" id="pf_Village"></select>
+            </div>
+            <div class="col-md-8"><label class="form-label">บ้านเลขที่/ที่อยู่</label><input class="form-control" id="pf_Address"></div>
+          </div>
+
+          <div class="form-section-title"><i class="bi bi-clipboard2-pulse"></i> ข้อมูลโรคเบาหวาน</div>
+          <div class="row g-2">
+            <div class="col-md-4"><label class="form-label">วันที่วินิจฉัย</label><input type="date" class="form-control" id="pf_DiagnosisDate"></div>
+            <div class="col-md-4"><label class="form-label">ชนิดเบาหวาน</label>
+              <select class="form-select" id="pf_Diabetes_Type">
+                <option>Type 2 DM</option><option>Type 1 DM</option><option>GDM</option><option>Other</option>
+              </select>
+            </div>
+            <div class="col-md-12"><label class="form-label">โรคร่วม</label>
+              <div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="pf_HT"><label class="form-check-label" for="pf_HT">ความดันโลหิตสูง (HT)</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="pf_DLP"><label class="form-check-label" for="pf_DLP">ไขมันในเลือดสูง (DLP)</label></div>
+                <div class="form-check form-check-inline"><input class="form-check-input" type="checkbox" id="pf_CKD"><label class="form-check-label" for="pf_CKD">โรคไตเรื้อรัง (CKD)</label></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-title"><i class="bi bi-camera-fill"></i> รูปภาพ (ไม่บังคับ)</div>
+          <div class="row g-2 align-items-center">
+            <div class="col-md-6"><input type="file" class="form-control" id="pf_Photo" accept="image/*" capture="environment"></div>
+            <div class="col-md-6"><img id="pf_PhotoPreview" src="" style="max-height:120px;display:none;" class="img-thumbnail"></div>
+          </div>
+          <input type="hidden" id="pf_PhotoURL">
+
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button class="btn btn-outline-secondary" onclick="showPage('patients')">ยกเลิก</button>
+            <button class="btn btn-primary-custom" onclick="savePatient()"><i class="bi bi-save"></i> บันทึกข้อมูล</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== PATIENT DETAIL ===================== -->
+    <div id="detailPage" class="subpage" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0"><i class="bi bi-person-lines-fill text-success"></i> ข้อมูลผู้ป่วย</h4>
+        <button class="btn btn-outline-secondary btn-sm" onclick="showPage('patients')"><i class="bi bi-arrow-left"></i> ย้อนกลับ</button>
+      </div>
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body" id="patientDetail"></div>
+      </div>
+
+      <ul class="nav nav-pills mb-3 flex-wrap" id="detailTabs">
+        <li class="nav-item"><button class="nav-link active" onclick="switchTab('visit')"><i class="bi bi-activity"></i> วัดสัญญาณชีพ/DTX</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="switchTab('lab')"><i class="bi bi-file-medical"></i> ผล Lab</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="switchTab('lifestyle')"><i class="bi bi-stars"></i> 6 เสาหลักเวชศาสตร์วิถีชีวิต</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="switchTab('stage')"><i class="bi bi-compass"></i> Stages of Change / MI</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="switchTab('history')"><i class="bi bi-clock-history"></i> ประวัติ</button></li>
+      </ul>
+
+      <!-- TAB: VISIT (Vital + DTX + Body) -->
+      <div id="tabVisit" class="tab-content-panel">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="form-section-title"><i class="bi bi-speedometer"></i> น้ำหนัก / ส่วนสูง / รอบเอว</div>
+            <div class="row g-2">
+              <div class="col-md-3"><label class="form-label">วันที่</label><input type="date" class="form-control" id="v_VisitDate"></div>
+              <div class="col-md-3"><label class="form-label">น้ำหนัก (kg)</label><input type="number" step="0.1" class="form-control" id="v_Weight" oninput="calcBMI()"></div>
+              <div class="col-md-3"><label class="form-label">ส่วนสูง (cm)</label><input type="number" step="0.1" class="form-control" id="v_Height" oninput="calcBMI()"></div>
+              <div class="col-md-3"><label class="form-label">BMI</label><input class="form-control" id="v_BMI" readonly></div>
+              <div class="col-md-3"><label class="form-label">รอบเอว (cm)</label><input type="number" step="0.1" class="form-control" id="v_Waist"></div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-droplet-half"></i> ค่า DTX</div>
+            <div class="row g-2">
+              <div class="col-md-4"><label class="form-label">DTX (mg/dL)</label><input type="number" step="1" class="form-control" id="v_DTX"></div>
+              <div class="col-md-4"><label class="form-label">ประเภทการตรวจ</label>
+                <select class="form-select" id="v_DTX_Type">
+                  <option>FBS งดอาหาร</option><option>Post-meal</option><option>Random</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-heart-pulse-fill"></i> สัญญาณชีพ</div>
+            <div class="row g-2">
+              <div class="col-md-3"><label class="form-label">SBP (mmHg)</label><input type="number" class="form-control" id="v_SBP"></div>
+              <div class="col-md-3"><label class="form-label">DBP (mmHg)</label><input type="number" class="form-control" id="v_DBP"></div>
+              <div class="col-md-3"><label class="form-label">ชีพจร (ครั้ง/นาที)</label><input type="number" class="form-control" id="v_Pulse"></div>
+              <div class="col-md-3"><label class="form-label">อัตราการหายใจ</label><input type="number" class="form-control" id="v_RR"></div>
+              <div class="col-md-3"><label class="form-label">อุณหภูมิ (°C)</label><input type="number" step="0.1" class="form-control" id="v_Temp"></div>
+              <div class="col-md-3"><label class="form-label">O2 Sat (%)</label><input type="number" class="form-control" id="v_O2"></div>
+            </div>
+
+            <div class="mt-3">
+              <label class="form-label">บันทึกเพิ่มเติม</label>
+              <textarea class="form-control" id="v_Notes" rows="2"></textarea>
+            </div>
+
+            <div class="row g-2 mt-2 align-items-center">
+              <div class="col-md-6"><label class="form-label"><i class="bi bi-camera"></i> ถ่ายภาพ/อัปโหลด</label>
+                <input type="file" class="form-control" id="v_Photo" accept="image/*" capture="environment">
+              </div>
+              <div class="col-md-6"><img id="v_PhotoPreview" src="" style="max-height:100px;display:none;" class="img-thumbnail"></div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+              <button class="btn btn-primary-custom" onclick="saveVisit()"><i class="bi bi-save"></i> บันทึกข้อมูลเยี่ยม/ตรวจวัด</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: LAB -->
+      <div id="tabLab" class="tab-content-panel" style="display:none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <div class="row g-2">
+              <div class="col-md-4"><label class="form-label">วันที่ Lab</label><input type="date" class="form-control" id="l_LabDate"></div>
+            </div>
+            <div class="form-section-title"><i class="bi bi-droplet-fill"></i> น้ำตาล / HbA1c</div>
+            <div class="row g-2">
+              <div class="col-md-4"><label class="form-label">FBS (mg/dL)</label><input type="number" class="form-control" id="l_FBS"></div>
+              <div class="col-md-4"><label class="form-label">HbA1c (%)</label><input type="number" step="0.1" class="form-control" id="l_HbA1c"></div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-droplet"></i> ไขมัน</div>
+            <div class="row g-2">
+              <div class="col-md-3"><label class="form-label">Cholesterol</label><input type="number" class="form-control" id="l_Chol"></div>
+              <div class="col-md-3"><label class="form-label">Triglyceride</label><input type="number" class="form-control" id="l_Tri"></div>
+              <div class="col-md-3"><label class="form-label">HDL</label><input type="number" class="form-control" id="l_HDL"></div>
+              <div class="col-md-3"><label class="form-label">LDL</label><input type="number" class="form-control" id="l_LDL"></div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-lungs"></i> การทำงานของไต</div>
+            <div class="row g-2">
+              <div class="col-md-3"><label class="form-label">BUN</label><input type="number" class="form-control" id="l_BUN"></div>
+              <div class="col-md-3"><label class="form-label">Creatinine</label><input type="number" step="0.01" class="form-control" id="l_Cr"></div>
+              <div class="col-md-3"><label class="form-label">eGFR</label><input type="number" step="0.1" class="form-control" id="l_eGFR"></div>
+              <div class="col-md-3"><label class="form-label">Urine Albumin</label><input class="form-control" id="l_UA"></div>
+            </div>
+
+            <div class="form-section-title"><i class="bi bi-flower2"></i> การทำงานของตับ & อิเล็กโทรไลต์</div>
+            <div class="row g-2">
+              <div class="col-md-3"><label class="form-label">ALT</label><input type="number" class="form-control" id="l_ALT"></div>
+              <div class="col-md-3"><label class="form-label">AST</label><input type="number" class="form-control" id="l_AST"></div>
+              <div class="col-md-3"><label class="form-label">Potassium (K)</label><input type="number" step="0.1" class="form-control" id="l_K"></div>
+              <div class="col-md-3"><label class="form-label">Sodium (Na)</label><input type="number" class="form-control" id="l_Na"></div>
+            </div>
+
+            <div class="mt-3">
+              <label class="form-label">หมายเหตุ</label>
+              <textarea class="form-control" id="l_Notes" rows="2"></textarea>
+            </div>
+
+            <div class="row g-2 mt-2 align-items-center">
+              <div class="col-md-6"><label class="form-label"><i class="bi bi-camera"></i> ถ่ายภาพใบ Lab</label>
+                <input type="file" class="form-control" id="l_Photo" accept="image/*" capture="environment">
+              </div>
+              <div class="col-md-6"><img id="l_PhotoPreview" src="" style="max-height:100px;display:none;" class="img-thumbnail"></div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+              <button class="btn btn-primary-custom" onclick="saveLab()"><i class="bi bi-save"></i> บันทึกผล Lab</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: LIFESTYLE (6 Pillars) -->
+      <div id="tabLifestyle" class="tab-content-panel" style="display:none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h6 class="text-success mb-3"><i class="bi bi-stars"></i> เวชศาสตร์วิถีชีวิต 6 เสาหลัก (Lifestyle Medicine)</h6>
+            <div class="mb-3"><label class="form-label">วันที่บันทึก</label><input type="date" class="form-control" id="ls_Date"></div>
+
+            <!-- Pillar 1: Nutrition -->
+            <div class="pillar-card">
+              <div class="d-flex align-items-start">
+                <div class="pillar-icon" style="background:#28a745;"><i class="bi bi-basket-fill"></i></div>
+                <div class="ms-3 flex-grow-1">
+                  <strong>1. โภชนาการที่เน้นพืชเป็นหลัก (Whole Food Plant-based)</strong>
+                  <div class="range-wrap mt-2">
+                    <div class="d-flex justify-content-between"><small>น้อย (1)</small><span class="range-label" id="p1_lbl">5</span><small>ดีมาก (10)</small></div>
+                    <input type="range" min="1" max="10" value="5" id="ls_P1" oninput="document.getElementById('p1_lbl').innerText=this.value">
+                  </div>
+                  <textarea class="form-control mt-2" placeholder="บันทึก: กินผัก/ผลไม้/ลดน้ำตาล..." id="ls_P1_Notes" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pillar 2: Exercise -->
+            <div class="pillar-card">
+              <div class="d-flex align-items-start">
+                <div class="pillar-icon" style="background:#0d6efd;"><i class="bi bi-bicycle"></i></div>
+                <div class="ms-3 flex-grow-1">
+                  <strong>2. การออกกำลังกาย (Physical Activity)</strong>
+                  <div class="range-wrap mt-2">
+                    <div class="d-flex justify-content-between"><small>น้อย (1)</small><span class="range-label" id="p2_lbl">5</span><small>ดีมาก (10)</small></div>
+                    <input type="range" min="1" max="10" value="5" id="ls_P2" oninput="document.getElementById('p2_lbl').innerText=this.value">
+                  </div>
+                  <div class="row g-2 mt-2">
+                    <div class="col-md-4"><input type="number" class="form-control" placeholder="นาที/สัปดาห์" id="ls_P2_Min"></div>
+                    <div class="col-md-8"><textarea class="form-control" placeholder="ชนิดกิจกรรม..." id="ls_P2_Notes" rows="1"></textarea></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pillar 3: Sleep -->
+            <div class="pillar-card">
+              <div class="d-flex align-items-start">
+                <div class="pillar-icon" style="background:#6610f2;"><i class="bi bi-moon-stars-fill"></i></div>
+                <div class="ms-3 flex-grow-1">
+                  <strong>3. การนอนหลับ (Restorative Sleep)</strong>
+                  <div class="range-wrap mt-2">
+                    <div class="d-flex justify-content-between"><small>น้อย (1)</small><span class="range-label" id="p3_lbl">5</span><small>ดีมาก (10)</small></div>
+                    <input type="range" min="1" max="10" value="5" id="ls_P3" oninput="document.getElementById('p3_lbl').innerText=this.value">
+                  </div>
+                  <div class="row g-2 mt-2">
+                    <div class="col-md-4"><input type="number" step="0.5" class="form-control" placeholder="ชั่วโมง/คืน" id="ls_P3_Hrs"></div>
+                    <div class="col-md-8"><textarea class="form-control" placeholder="คุณภาพการนอน..." id="ls_P3_Notes" rows="1"></textarea></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pillar 4: Stress -->
+            <div class="pillar-card">
+              <div class="d-flex align-items-start">
+                <div class="pillar-icon" style="background:#fd7e14;"><i class="bi bi-emoji-smile-fill"></i></div>
+                <div class="ms-3 flex-grow-1">
+                  <strong>4. การจัดการความเครียด (Stress Management)</strong>
+                  <div class="range-wrap mt-2">
+                    <div class="d-flex justify-content-between"><small>เครียดมาก (1)</small><span class="range-label" id="p4_lbl">5</span><small>ผ่อนคลาย (10)</small></div>
+                    <input type="range" min="1" max="10" value="5" id="ls_P4" oninput="document.getElementById('p4_lbl').innerText=this.value">
+                  </div>
+                  <textarea class="form-control mt-2" placeholder="วิธีจัดการ: สมาธิ/หายใจ/งานอดิเรก..." id="ls_P4_Notes" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pillar 5: Substance -->
+            <div class="pillar-card">
+              <div class="d-flex align-items-start">
+                <div class="pillar-icon" style="background:#dc3545;"><i class="bi bi-shield-x"></i></div>
+                <div class="ms-3 flex-grow-1">
+                  <strong>5. หลีกเลี่ยงสารเสพติด (Avoidance of Risky Substances)</strong>
+                  <div class="range-wrap mt-2">
+                    <div class="d-flex justify-content-between"><small>ใช้มาก (1)</small><span class="range-label" id="p5_lbl">5</span><small>ไม่ใช้เลย (10)</small></div>
+                    <input type="range" min="1" max="10" value="5" id="ls_P5" oninput="document.getElementById('p5_lbl').innerText=this.value">
+                  </div>
+                  <div class="row g-2 mt-2">
+                    <div class="col-md-6"><label class="form-label small">บุหรี่</label>
+                      <select class="form-select form-select-sm" id="ls_P5_Smoke"><option>No</option><option>Yes</option><option>Ex-smoker</option></select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label small">แอลกอฮอล์</label>
+                      <select class="form-select form-select-sm" id="ls_P5_Alc"><option>No</option><option>Yes</option><option>Occasionally</option></select>
+                    </div>
+                  </div>
+                  <textarea class="form-control mt-2" placeholder="หมายเหตุ..." id="ls_P5_Notes" rows="1"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pillar 6: Social -->
+            <div class="pillar-card">
+              <div class="d-flex align-items-start">
+                <div class="pillar-icon" style="background:#20c997;"><i class="bi bi-people-fill"></i></div>
+                <div class="ms-3 flex-grow-1">
+                  <strong>6. ความสัมพันธ์ทางสังคม (Positive Social Connections)</strong>
+                  <div class="range-wrap mt-2">
+                    <div class="d-flex justify-content-between"><small>โดดเดี่ยว (1)</small><span class="range-label" id="p6_lbl">5</span><small>ความสัมพันธ์ดี (10)</small></div>
+                    <input type="range" min="1" max="10" value="5" id="ls_P6" oninput="document.getElementById('p6_lbl').innerText=this.value">
+                  </div>
+                  <textarea class="form-control mt-2" placeholder="ครอบครัว/เพื่อน/ชุมชน..." id="ls_P6_Notes" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button class="btn btn-primary-custom" onclick="saveLifestyle()"><i class="bi bi-save"></i> บันทึก 6 เสาหลัก</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: STAGES OF CHANGE + MI -->
+      <div id="tabStage" class="tab-content-panel" style="display:none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h6 class="text-success mb-2"><i class="bi bi-compass"></i> Stages of Change + Motivational Interviewing</h6>
+            <p class="small text-muted mb-3">
+              ประเมินขั้นการเปลี่ยนแปลงพฤติกรรม (TTM) เพื่อเลือกกลยุทธ์ MI ที่เหมาะสมต่อผู้รับบริการ
+            </p>
+
+            <div class="row g-2 mb-2">
+              <div class="col-md-4">
+                <label class="form-label">วันที่ประเมิน</label>
+                <input type="date" class="form-control" id="sc_Date">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">ด้านที่ประเมิน (Domain)</label>
+                <select class="form-select" id="sc_Domain" onchange="renderStageUI()">
+                  <option value="Overall">ภาพรวม (Overall)</option>
+                  <option value="Nutrition">โภชนาการ</option>
+                  <option value="Exercise">ออกกำลังกาย</option>
+                  <option value="Sleep">การนอน</option>
+                  <option value="Stress">จัดการความเครียด</option>
+                  <option value="Substance">เลิก/ลดสารเสพติด</option>
+                  <option value="Social">ความสัมพันธ์สังคม</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">วันนัดติดตาม (Review)</label>
+                <input type="date" class="form-control" id="sc_ReviewDate">
+              </div>
+            </div>
+
+            <label class="form-label fw-bold">ขั้นการเปลี่ยนแปลงปัจจุบัน</label>
+            <div class="stage-stepper" id="stageStepper">
+              <div class="stage-step" data-stage="1" onclick="selectStage(1)">
+                <div class="stage-num">1</div>
+                <strong>เมินเฉย</strong>
+                <small>Pre-contemplation<br>ยังไม่รู้ตัว/ต่อต้าน</small>
+              </div>
+              <div class="stage-step" data-stage="2" onclick="selectStage(2)">
+                <div class="stage-num">2</div>
+                <strong>ตระหนักรู้</strong>
+                <small>Contemplation<br>ลังเล/ชั่งใจ</small>
+              </div>
+              <div class="stage-step" data-stage="3" onclick="selectStage(3)">
+                <div class="stage-num">3</div>
+                <strong>เตรียมการ</strong>
+                <small>Preparation<br>วางแผน/เริ่มทำ</small>
+              </div>
+              <div class="stage-step" data-stage="4" onclick="selectStage(4)">
+                <div class="stage-num">4</div>
+                <strong>ลงมือทำ</strong>
+                <small>Action<br>เปลี่ยน &lt; 6 เดือน</small>
+              </div>
+              <div class="stage-step" data-stage="5" onclick="selectStage(5)">
+                <div class="stage-num">5</div>
+                <strong>คงสภาพ</strong>
+                <small>Maintenance<br>&gt; 6 เดือน</small>
+              </div>
+            </div>
+            <input type="hidden" id="sc_Stage">
+
+            <div class="row g-2 mt-2">
+              <div class="col-md-6 range-wrap">
+                <label class="form-label">ความสำคัญ (Importance)
+                  <span class="range-label ms-2" id="sc_ImpLbl">5</span>/10
+                </label>
+                <div class="d-flex justify-content-between"><small>ไม่สำคัญ</small><small>สำคัญมาก</small></div>
+                <input type="range" min="1" max="10" value="5" id="sc_Importance" oninput="document.getElementById('sc_ImpLbl').innerText=this.value">
+              </div>
+              <div class="col-md-6 range-wrap">
+                <label class="form-label">ความมั่นใจ (Confidence)
+                  <span class="range-label ms-2" id="sc_ConfLbl">5</span>/10
+                </label>
+                <div class="d-flex justify-content-between"><small>ไม่มั่นใจ</small><small>มั่นใจมาก</small></div>
+                <input type="range" min="1" max="10" value="5" id="sc_Confidence" oninput="document.getElementById('sc_ConfLbl').innerText=this.value">
+              </div>
+            </div>
+
+            <!-- MI Guidance - ปรับตาม Stage ที่เลือก -->
+            <div class="mt-3" id="miGuidance"></div>
+
+            <div class="row g-2 mt-2">
+              <div class="col-md-12">
+                <label class="form-label">Change Talk (คำพูดที่บ่งชี้แรงจูงใจเปลี่ยน)</label>
+                <textarea class="form-control" id="sc_ChangeTalk" rows="2" placeholder='บันทึกคำพูดของผู้ป่วย เช่น "อยากหายจากเบาหวาน", "กลัวต้องฉีดอินซูลิน"...'></textarea>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">อุปสรรค (Barriers)</label>
+                <textarea class="form-control" id="sc_Barriers" rows="2" placeholder="เช่น ไม่มีเวลาออกกำลังกาย, ค่ายา, ลูกชายชวนกินนอกบ้าน..."></textarea>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">แผนการ/เป้าหมายต่อไป (Next Plan — SMART goal)</label>
+                <textarea class="form-control" id="sc_NextPlan" rows="2" placeholder="เช่น เดินวันละ 30 นาที 5 วัน/สัปดาห์ เริ่มจันทร์นี้"></textarea>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">บันทึก MI (OARS ที่ใช้ + สังเกตการณ์)</label>
+                <textarea class="form-control" id="sc_MINotes" rows="2" placeholder="เทคนิคที่ใช้, reflective listening, affirmation ที่ให้..."></textarea>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+              <button class="btn btn-primary-custom" onclick="saveStage()"><i class="bi bi-save"></i> บันทึก Stage + MI</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: HISTORY -->
+      <div id="tabHistory" class="tab-content-panel" style="display:none;">
+        <div id="historyContent"></div>
+      </div>
+    </div>
+
+    <!-- ===================== AUDIT LOG ===================== -->
+    <div id="auditLogPage" class="subpage" style="display:none;">
+      <h4 class="mb-3"><i class="bi bi-shield-check text-success"></i> ประวัติการใช้งาน (Audit Log)</h4>
+      <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead class="table-light"><tr>
+              <th>เวลา</th><th>ผู้ใช้</th><th>การทำงาน</th><th>เป้าหมาย</th><th>ID</th><th>รายละเอียด</th>
+            </tr></thead>
+            <tbody id="logTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== USER MANAGEMENT (admin only) ===================== -->
+    <div id="usersPage" class="subpage" style="display:none;">
+      <h4 class="mb-3"><i class="bi bi-people-fill text-success"></i> จัดการผู้ใช้งาน</h4>
+
+      <ul class="nav nav-tabs mb-3" id="userTabs">
+        <li class="nav-item"><a class="nav-link active" href="#" onclick="switchUserTab('pending', event)"><i class="bi bi-hourglass-split"></i> รออนุมัติ <span id="tabPendingBadge" class="badge bg-danger">0</span></a></li>
+        <li class="nav-item"><a class="nav-link" href="#" onclick="switchUserTab('all', event)"><i class="bi bi-list-ul"></i> ผู้ใช้ทั้งหมด</a></li>
+      </ul>
+
+      <div id="userTabPending" class="user-tab-panel">
+        <div class="card border-0 shadow-sm">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light"><tr>
+                <th>ชื่อผู้ใช้</th><th>ชื่อ-สกุล</th><th>เบอร์โทร</th><th>บทบาท</th><th>หมู่บ้าน</th><th>สมัครเมื่อ</th><th style="width:180px;">การจัดการ</th>
+              </tr></thead>
+              <tbody id="pendingUsersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="userTabAll" class="user-tab-panel" style="display:none;">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body pb-0">
+            <input type="text" class="form-control mb-3" id="userSearch" placeholder="ค้นหา: ชื่อ / เบอร์โทร / username" oninput="renderAllUsers()">
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light"><tr>
+                <th>ชื่อผู้ใช้</th><th>ชื่อ-สกุล</th><th>เบอร์โทร</th><th>บทบาท</th><th>หมู่บ้าน</th><th>สถานะ</th><th>เข้าล่าสุด</th><th style="width:220px;">การจัดการ</th>
+              </tr></thead>
+              <tbody id="allUsersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Mobile bottom nav -->
+  <div class="nav-bottom">
+    <div class="nav-item active" onclick="showPage('dashboard', this)"><i class="bi bi-speedometer2"></i>ภาพรวม</div>
+    <div class="nav-item" onclick="showPage('remission', this)"><i class="bi bi-heart-fill"></i>Remission</div>
+    <div class="nav-item" id="mobNavPatients" onclick="showPage('patients', this)"><i class="bi bi-people-fill"></i>ผู้ป่วย</div>
+    <div class="nav-item" id="mobNavAdd" onclick="openNewPatientForm(); this.classList.add('active');"><i class="bi bi-plus-circle-fill"></i>เพิ่ม</div>
+    <div class="nav-item" id="mobNavUsers" onclick="showPage('users', this)" style="display:none;"><i class="bi bi-people"></i>ผู้ใช้</div>
+    <div class="nav-item" onclick="doLogout()"><i class="bi bi-box-arrow-right"></i>ออก</div>
+  </div>
+
+  <footer class="footer-copy">
+    Copyright © 2025 ระบบบริหารจัดการโรคเบาหวาน รพ.สต.บ้านคำใหญ่/พชต.คำใหญ่
+  </footer>
+</div>
+
+<!-- ===================== IMPORT MODAL ===================== -->
+<div class="modal fade" id="importModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1a8754 0%,#0d6efd 100%);color:#fff;">
+        <h5 class="modal-title"><i class="bi bi-file-earmark-excel"></i> <span id="importTitle">นำเข้าข้อมูลจาก Excel</span></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info small">
+          <strong><i class="bi bi-info-circle"></i> รูปแบบไฟล์ที่รองรับ:</strong>
+          <span id="importHint"></span>
+          <div class="mt-2">รองรับ .xlsx, .xls, .csv โดยใช้แถวแรกเป็นหัวตาราง (header)</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label"><i class="bi bi-cloud-upload"></i> เลือกไฟล์ Excel</label>
+          <input type="file" class="form-control" id="importFile" accept=".xlsx,.xls,.csv" onchange="onImportFileChange()">
+        </div>
+
+        <div id="importPreview" style="display:none;">
+          <h6 class="text-success">ตัวอย่างข้อมูล (<span id="importCount">0</span> แถว)</h6>
+          <div class="table-responsive" style="max-height:320px;">
+            <table class="table table-sm table-hover table-bordered small" id="importTable"></table>
+          </div>
+
+          <div class="mt-3" id="importProgress" style="display:none;">
+            <label class="small"><span id="importProgressLabel">กำลังนำเข้า...</span></label>
+            <div class="progress" style="height:22px;">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="importProgressBar" style="width:0%;">0%</div>
+            </div>
+          </div>
+
+          <div id="importResult" class="mt-3"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary-custom" id="btnStartImport" onclick="startImport()" disabled>
+          <i class="bi bi-upload"></i> เริ่มนำเข้าข้อมูล
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== REGISTER MODAL ===================== -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1a8754 0%,#0d6efd 100%);color:#fff;">
+        <h5 class="modal-title"><i class="bi bi-person-plus-fill me-2"></i>สมัครใช้งานใหม่</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info small"><i class="bi bi-info-circle-fill"></i> กรอกข้อมูลให้ครบ — บัญชีจะรอผู้ดูแลระบบอนุมัติก่อนใช้งาน</div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">ชื่อ - สกุล <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="regFullName" placeholder="เช่น สมชาย ใจดี">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+            <input type="tel" class="form-control" id="regPhone" placeholder="0812345678" maxlength="10">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ชื่อผู้ใช้ (Username) <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="regUsername" placeholder="เช่น somchai01">
+            <small class="text-muted">ใช้ชื่อผู้ใช้หรือเบอร์โทรศัพท์เพื่อเข้าสู่ระบบก็ได้</small>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">รหัสผ่าน <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="regPassword" placeholder="อย่างน้อย 6 ตัวอักษร">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">ยืนยันรหัสผ่าน <span class="text-danger">*</span></label>
+            <input type="password" class="form-control" id="regPasswordConfirm" placeholder="ยืนยันรหัสผ่านอีกครั้ง">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">บทบาท <span class="text-danger">*</span></label>
+            <select class="form-select" id="regRole" onchange="onRegRoleChange()">
+              <option value="staff">เจ้าหน้าที่ รพ.สต.</option>
+              <option value="osm" selected>อสม.</option>
+              <option value="viewer">ผู้บริหาร / กรรมการ พชต. (ดูเฉพาะแดชบอร์ด)</option>
+            </select>
+          </div>
+          <div class="col-12" id="regVillageWrap">
+            <label class="form-label">หมู่บ้าน <span class="text-danger">*</span></label>
+            <select class="form-select" id="regVillage"></select>
+            <small class="text-muted">เลือก "0 (ทั้งตำบล)" สำหรับเจ้าหน้าที่ที่ดูแลทุกหมู่บ้าน</small>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary-custom" onclick="doRegister()"><i class="bi bi-check-circle-fill"></i> ส่งคำขอสมัครใช้งาน</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CHANGE PASSWORD MODAL ===================== -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1a8754 0%,#0d6efd 100%);color:#fff;">
+        <h5 class="modal-title"><i class="bi bi-key-fill me-2"></i>เปลี่ยนรหัสผ่าน</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">รหัสผ่านเดิม</label>
+          <input type="password" class="form-control" id="cpOld">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)</label>
+          <input type="password" class="form-control" id="cpNew">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
+          <input type="password" class="form-control" id="cpNew2">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary-custom" onclick="doChangePassword()"><i class="bi bi-check-circle-fill"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ADMIN EDIT USER MODAL ===================== -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background:linear-gradient(135deg,#1a8754 0%,#0d6efd 100%);color:#fff;">
+        <h5 class="modal-title"><i class="bi bi-person-gear me-2"></i>แก้ไขผู้ใช้</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="euUserId">
+        <p class="mb-3"><strong>ผู้ใช้:</strong> <span id="euDisplayName"></span></p>
+        <div class="mb-3">
+          <label class="form-label">บทบาท</label>
+          <select class="form-select" id="euRole">
+            <option value="admin">ผู้ดูแลระบบ</option>
+            <option value="staff">เจ้าหน้าที่ รพ.สต.</option>
+            <option value="osm">อสม.</option>
+            <option value="viewer">ผู้บริหาร / กรรมการ พชต.</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">หมู่บ้าน</label>
+          <select class="form-select" id="euVillage"></select>
+        </div>
+        <hr>
+        <div class="mb-3">
+          <label class="form-label">รีเซ็ตรหัสผ่าน (ถ้าต้องการ)</label>
+          <input type="password" class="form-control" id="euNewPassword" placeholder="เว้นว่างไว้หากไม่เปลี่ยน">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+        <button type="button" class="btn btn-primary-custom" onclick="saveUserEdit()"><i class="bi bi-check-circle-fill"></i> บันทึก</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS + SweetAlert -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<script>
+/* ============================================================
+   ระบบบริหารจัดการโรคเบาหวาน - Frontend
+   ใช้ JSONP เพื่อหลีกเลี่ยง cross-origin issues
+   ============================================================ */
+
+// !!! เมื่อ deploy เป็น Web App แล้ว ให้เปลี่ยน APP_URL ด้านล่างเป็น URL จริง !!!
+const APP_URL = 'https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec';
+
+let currentUser = null;
+let currentPatient = null;
+let villageChartInstance = null;
+
+const VILLAGES = {
+  '1': 'หมู่ 1 บ้านหัวสนาม',
+  '2': 'หมู่ 2 บ้านคำเจริญ',
+  '3': 'หมู่ 3 บ้านชัยศรี',
+  '4': 'หมู่ 4 บ้านนาดี',
+  '5': 'หมู่ 5 บ้านห้วยยาง',
+  '6': 'หมู่ 6 บ้านห้วยม่วง',
+  '7': 'หมู่ 7 บ้านคำใหญ่',
+  '8': 'หมู่ 8 บ้านคำถาวร',
+  '9': 'หมู่ 9 บ้านโพธิ์ทอง',
+  '10': 'หมู่ 10 บ้านโคกป่ากุง',
+  '11': 'หมู่ 11 บ้านคำใหญ่',
+  '12': 'หมู่ 12 บ้านคำเจริญ'
+};
+
+/* ---------- apiCall: เลือก POST/JSONP อัตโนมัติ ----------
+   - payload ใหญ่ (> 1500 chars หลัง encode) → POST
+   - payload เล็ก → JSONP (เร็วกว่า + ไม่ต้อง CORS)
+*/
+async function apiCall(params) {
+  const query = Object.keys(params).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k] || '')).join('&');
+  if (query.length > 1500) {
+    return postJson(params, 2);
+  }
+  return jsonp(params);
+}
+
+/* ---------- POST helper (สำหรับ payload ใหญ่) ---------- */
+async function postJson(payload, retries) {
+  retries = retries !== undefined ? retries : 2;
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      // ใช้ text/plain เพื่อเลี่ยง CORS preflight
+      const res = await fetch(APP_URL, {
+        method: 'POST',
+        mode: 'cors',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const text = await res.text();
+      try { return JSON.parse(text); }
+      catch (e) { throw new Error('Invalid response: ' + text.substring(0, 200)); }
+    } catch (e) {
+      lastErr = e;
+      if (attempt < retries) {
+        // wait ก่อน retry (exponential)
+        await new Promise(r => setTimeout(r, (attempt + 1) * 1000));
+      }
+    }
+  }
+  throw lastErr || new Error('Request failed');
+}
+
+/* ---------- JSONP helper ---------- */
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error('Request timeout'));
+    }, 30000);
+
+    window[callbackName] = function(data) {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      document.body.removeChild(script);
+      resolve(data);
+    };
+
+    const query = Object.keys(params).map(k => encodeURIComponent(k) + '=' + encodeURIComponent(params[k])).join('&');
+    script.src = APP_URL + '?' + query + '&callback=' + callbackName;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      document.body.removeChild(script);
+      reject(new Error('Network error'));
+    };
+    document.body.appendChild(script);
+  });
+}
+
+/* ---------- Sweet Alert helpers ---------- */
+function showLoading(msg) {
+  Swal.fire({
+    title: msg || 'กำลังบันทึกข้อมูล...',
+    html: '<div class="spinner-border text-success"></div>',
+    showConfirmButton: false,
+    allowOutsideClick: false
+  });
+}
+function showSuccess(msg) {
+  return Swal.fire({ icon: 'success', title: 'สำเร็จ', text: msg, timer: 1800, showConfirmButton: false });
+}
+function showError(msg) {
+  return Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: msg });
+}
+
+/* ---------- Page navigation ---------- */
+function showPage(page, navItem) {
+  if (currentUser === null && page !== 'login') return;
+  document.querySelectorAll('.subpage').forEach(el => el.style.display = 'none');
+  const target = document.getElementById(page + 'Page');
+  if (target) target.style.display = 'block';
+
+  // Update bottom nav
+  document.querySelectorAll('.nav-bottom .nav-item').forEach(el => el.classList.remove('active'));
+  if (navItem) navItem.classList.add('active');
+
+  // Page-specific loaders
+  if (page === 'dashboard') loadDashboard();
+  if (page === 'remission') loadRemission();
+  if (page === 'patients') {
+    if (currentUser && currentUser.role === 'viewer') { showError('บทบาทผู้บริหาร/กรรมการ พชต. ดูได้เฉพาะ Dashboard'); showPage('dashboard'); return; }
+    loadPatients();
+  }
+  if (page === 'patientForm') {
+    // viewer ห้ามเข้าหน้านี้เสมอ
+    if (currentUser && currentUser.role === 'viewer') {
+      showError('บทบาทผู้บริหาร/กรรมการ พชต. ไม่มีสิทธิ์เข้าถึงหน้านี้');
+      showPage('dashboard'); return;
+    }
+    // ตรวจจากค่า pf_PatientID: ถ้ามีค่า = กำลังแก้ไข, ถ้าว่าง = กำลังเพิ่มใหม่
+    const _pfIdEl = document.getElementById('pf_PatientID');
+    const _isEdit = !!(_pfIdEl && _pfIdEl.value);
+    // osm สามารถ "แก้ไข" ผู้ป่วยในหมู่บ้านตนเองได้ แต่ห้าม "เพิ่มผู้ป่วยใหม่"
+    if (currentUser && currentUser.role === 'osm' && !_isEdit) {
+      showError('บทบาท อสม. ไม่มีสิทธิ์เพิ่มผู้ป่วยใหม่ (แก้ไขได้เฉพาะผู้ป่วยในหมู่บ้านของตนเอง)');
+      showPage('dashboard'); return;
+    }
+    // ไม่เรียก resetPatientForm() ที่นี่ — ให้ผู้เรียกจัดการเอง
+    // (openNewPatientForm สำหรับเพิ่มใหม่, editPatient สำหรับแก้ไข)
+  }
+  if (page === 'auditLog') {
+    if (currentUser && currentUser.role !== 'admin') { showError('ต้องการสิทธิ์ Admin'); showPage('dashboard'); return; }
+    loadAuditLog();
+  }
+  if (page === 'users') {
+    if (currentUser && currentUser.role !== 'admin') { showError('ต้องการสิทธิ์ Admin'); showPage('dashboard'); return; }
+    loadUsersPage();
+  }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('#detailTabs .nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+  event.currentTarget.classList.add('active');
+  if (tab === 'history') loadHistory();
+}
+
+/* ---------- Authentication ---------- */
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (!u || !p) { showError('กรุณากรอกชื่อผู้ใช้และรหัสผ่าน'); return; }
+
+  showLoading('กำลังเข้าสู่ระบบ...');
+  try {
+    const r = await jsonp({ action: 'login', username: u, password: p });
+    Swal.close();
+    if (r.success) {
+      currentUser = r.data;
+      document.getElementById('userInfo').innerText = currentUser.fullName + ' (' + roleLabel(currentUser.role) + ')';
+      applyRoleUI(currentUser.role);
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('appPage').classList.add('active');
+      initVillageDropdowns();
+      showPage('dashboard');
+      showSuccess('ยินดีต้อนรับ ' + currentUser.fullName);
+    } else {
+      showError(r.message);
+    }
+  } catch (e) { showError(e.toString()); }
+}
+
+function roleLabel(role) {
+  return ({ admin: 'ผู้ดูแลระบบ', staff: 'จนท.รพ.สต.', osm: 'อสม.', viewer: 'ผู้บริหาร/กรรมการ พชต.' })[role] || role;
+}
+
+/**
+ * ซ่อน/แสดงเมนูตามสิทธิ์ของ role
+ */
+function applyRoleUI(role) {
+  const isAdmin = role === 'admin';
+  const isViewer = role === 'viewer';
+  const canEdit = role === 'admin' || role === 'staff';
+
+  // viewer เห็นเฉพาะ Dashboard + DM Remission
+  const mp = document.getElementById('menuPatients');
+  const mpf = document.getElementById('menuPatientForm');
+  const ml = document.getElementById('menuLog');
+  const mu = document.getElementById('menuUsers');
+  if (mp) mp.style.display = isViewer ? 'none' : '';
+  if (mpf) mpf.style.display = (isViewer || role === 'osm') ? 'none' : ''; // osm ก็ไม่ควรเพิ่มผู้ป่วยใหม่เองในระบบนี้
+  if (ml) ml.style.display = isAdmin ? '' : 'none';
+  if (mu) mu.style.display = isAdmin ? '' : 'none';
+
+  // Mobile bottom nav
+  const mmp = document.getElementById('mobNavPatients');
+  const mma = document.getElementById('mobNavAdd');
+  const mmu = document.getElementById('mobNavUsers');
+  if (mmp) mmp.style.display = isViewer ? 'none' : '';
+  if (mma) mma.style.display = (isViewer || role === 'osm') ? 'none' : '';
+  if (mmu) mmu.style.display = isAdmin ? '' : 'none';
+
+  // โหลดจำนวนผู้รออนุมัติ (แสดง badge)
+  if (isAdmin) loadPendingBadge();
+}
+
+async function doLogout() {
+  const result = await Swal.fire({
+    icon: 'question', title: 'ออกจากระบบ?',
+    showCancelButton: true, confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#1a8754'
+  });
+  if (!result.isConfirmed) return;
+  showLoading('กำลังออกจากระบบ...');
+  try {
+    await jsonp({ action: 'logout', token: currentUser.token });
+  } catch (e) {}
+  Swal.close();
+  currentUser = null;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('appPage').classList.remove('active');
+  document.getElementById('loginPage').classList.add('active');
+  showSuccess('ออกจากระบบสำเร็จ');
+}
+
+/* ---------- Village dropdowns ---------- */
+function initVillageDropdowns() {
+  const filterV = document.getElementById('filterVillage');
+  const pfV = document.getElementById('pf_Village');
+  let filterHtml = '<option value="all">ทุกหมู่บ้าน</option>';
+  let pfHtml = '';
+  Object.keys(VILLAGES).forEach(k => {
+    filterHtml += `<option value="${k}">${VILLAGES[k]}</option>`;
+    pfHtml += `<option value="${k}">${VILLAGES[k]}</option>`;
+  });
+  filterV.innerHTML = filterHtml;
+  pfV.innerHTML = pfHtml;
+
+  // Lock for osm role
+  if (currentUser.role === 'osm') {
+    filterV.value = currentUser.village;
+    filterV.disabled = true;
+    pfV.value = currentUser.village;
+    pfV.disabled = true;
+  }
+}
+
+/* ---------- Dashboard ---------- */
+async function loadDashboard() {
+  try {
+    const r = await jsonp({ action: 'getDashboardStats', token: currentUser.token });
+    if (!r.success) { showError(r.message); return; }
+    const s = r.data;
+    document.getElementById('statTotal').innerText = s.totalPatients;
+    document.getElementById('statMonth').innerText = s.visitsThisMonth;
+    document.getElementById('statDtx').innerText = s.highDTX;
+    document.getElementById('statBp').innerText = s.highBP;
+
+    // Village list
+    let listHtml = '';
+    Object.keys(VILLAGES).forEach(k => {
+      listHtml += `<div class="d-flex justify-content-between py-1 border-bottom">
+        <span>${VILLAGES[k]}</span>
+        <span class="chip chip-green">${s.byVillage[k] || 0} คน</span></div>`;
+    });
+    document.getElementById('villageList').innerHTML = listHtml;
+
+    // Chart
+    const labels = Object.keys(VILLAGES).map(k => 'ม.' + k);
+    const data = Object.keys(VILLAGES).map(k => s.byVillage[k] || 0);
+    if (villageChartInstance) villageChartInstance.destroy();
+    const ctx = document.getElementById('villageChart').getContext('2d');
+    villageChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: { labels: labels, datasets: [{ label: 'จำนวนผู้ป่วย', data: data, backgroundColor: 'rgba(26,135,84,0.7)', borderColor: 'rgba(13,110,253,1)', borderWidth: 1 }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+  } catch (e) { showError(e.toString()); }
+}
+
+/* ---------- DM Remission Dashboard ---------- */
+let rmHbA1cChart = null, rmPillarRadar = null, rmVillageChart = null;
+let rmStageChart = null, rmReadinessChart = null;
+
+async function loadRemission() {
+  try {
+    showLoading('กำลังคำนวณสถิติ DM Remission...');
+    const r = await jsonp({ action: 'getRemissionStats', token: currentUser.token });
+    Swal.close();
+    if (!r.success) { showError(r.message); return; }
+    const { overall, villages, remissionCandidates } = r.data;
+
+    // Cards
+    document.getElementById('rmRate').innerText = overall.remissionRate || 0;
+    document.getElementById('rmAvgHbA1c').innerText = overall.avgHbA1c !== null ? overall.avgHbA1c : '-';
+    document.getElementById('rmAvgPillars').innerText = overall.avgPillars ? overall.avgPillars.total : '-';
+    document.getElementById('rmWithHbA1c').innerText = overall.withHbA1c;
+    document.getElementById('rmTotal').innerText = overall.totalPatients;
+
+    // HbA1c Doughnut
+    if (rmHbA1cChart) rmHbA1cChart.destroy();
+    rmHbA1cChart = new Chart(document.getElementById('rmHbA1cChart').getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Remission (<6.5)', 'Good (6.5-7.0)', 'Fair (7.0-8.0)', 'Poor (≥8.0)'],
+        datasets: [{
+          data: [overall.remission, overall.good, overall.fair, overall.poor],
+          backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545'],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                return ctx.label + ': ' + ctx.parsed + ' คน (' + pct + '%)';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Pillar Radar
+    if (rmPillarRadar) rmPillarRadar.destroy();
+    const pillarLabels = ['อาหาร', 'ออกกำลังกาย', 'นอน', 'เครียด', 'สารเสพติด', 'สังคม'];
+    const pillarData = overall.avgPillars
+      ? [overall.avgPillars.p1, overall.avgPillars.p2, overall.avgPillars.p3, overall.avgPillars.p4, overall.avgPillars.p5, overall.avgPillars.p6]
+      : [0, 0, 0, 0, 0, 0];
+    rmPillarRadar = new Chart(document.getElementById('rmPillarRadar').getContext('2d'), {
+      type: 'radar',
+      data: {
+        labels: pillarLabels,
+        datasets: [{
+          label: 'ค่าเฉลี่ยตำบล',
+          data: pillarData,
+          fill: true,
+          backgroundColor: 'rgba(26,135,84,0.25)',
+          borderColor: '#1a8754',
+          pointBackgroundColor: '#1a8754',
+          pointRadius: 4,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: { beginAtZero: true, max: 10, ticks: { stepSize: 2 } }
+        }
+      }
+    });
+
+    // Village bar chart (Remission rate per village)
+    if (rmVillageChart) rmVillageChart.destroy();
+    const sortedVillages = villages.slice().sort((a, b) => parseInt(a.villageId) - parseInt(b.villageId));
+    rmVillageChart = new Chart(document.getElementById('rmVillageChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sortedVillages.map(v => 'ม.' + v.villageId),
+        datasets: [
+          {
+            label: '% Remission',
+            data: sortedVillages.map(v => v.remissionRate),
+            backgroundColor: 'rgba(40,167,69,0.7)',
+            borderColor: '#28a745',
+            borderWidth: 1,
+            yAxisID: 'y'
+          },
+          {
+            label: 'HbA1c เฉลี่ย',
+            data: sortedVillages.map(v => v.avgHbA1c || 0),
+            type: 'line',
+            borderColor: '#dc3545',
+            backgroundColor: 'rgba(220,53,69,0.1)',
+            tension: 0.3,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { intersect: false, mode: 'index' },
+        scales: {
+          y:  { position: 'left',  beginAtZero: true, max: 100, title: { display: true, text: '% Remission' } },
+          y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'HbA1c (%)' } }
+        }
+      }
+    });
+
+    // Village table
+    let html = '';
+    sortedVillages.forEach(v => {
+      const rate = v.remissionRate || 0;
+      const badge = rate >= 30 ? 'bg-success' : rate >= 15 ? 'bg-warning text-dark' : 'bg-danger';
+      const pillarTxt = v.avgPillars ? v.avgPillars.total.toFixed(1) + '/60' : '-';
+      html += `<tr>
+        <td>${v.villageName}</td>
+        <td class="text-center">${v.totalPatients}</td>
+        <td class="text-center text-success fw-bold">${v.remission}</td>
+        <td class="text-center">${v.good}</td>
+        <td class="text-center">${v.fair}</td>
+        <td class="text-center text-danger">${v.poor}</td>
+        <td class="text-center">${v.avgHbA1c !== null ? v.avgHbA1c : '-'}</td>
+        <td class="text-center"><span class="badge ${badge}">${rate}%</span></td>
+        <td class="text-center">${pillarTxt}</td>
+      </tr>`;
+    });
+    // Total row
+    html += `<tr class="table-success fw-bold">
+      <td>รวมทั้งตำบล</td>
+      <td class="text-center">${overall.totalPatients}</td>
+      <td class="text-center">${overall.remission}</td>
+      <td class="text-center">${overall.good}</td>
+      <td class="text-center">${overall.fair}</td>
+      <td class="text-center">${overall.poor}</td>
+      <td class="text-center">${overall.avgHbA1c !== null ? overall.avgHbA1c : '-'}</td>
+      <td class="text-center">${overall.remissionRate}%</td>
+      <td class="text-center">${overall.avgPillars ? overall.avgPillars.total.toFixed(1) + '/60' : '-'}</td>
+    </tr>`;
+    document.getElementById('rmVillageTable').innerHTML = html;
+
+    // Candidates
+    let candHtml = '';
+    remissionCandidates.forEach((p, i) => {
+      const hb = p.latestHbA1c.toFixed(1);
+      const cls = p.latestHbA1c < 6.5 ? 'text-success fw-bold' : p.latestHbA1c < 7 ? 'text-info' : 'text-warning';
+      const icon = p.latestHbA1c < 6.5 ? '<i class="bi bi-award-fill text-warning"></i>' : '';
+      candHtml += `<tr>
+        <td>${i + 1}</td>
+        <td>${p.hn || '-'}</td>
+        <td>${icon} ${p.name}</td>
+        <td>${p.villageName}</td>
+        <td class="${cls}">${hb}%</td>
+        <td>${p.latestPillarsTotal !== null ? p.latestPillarsTotal + '/60' : '-'}</td>
+        <td><button class="btn btn-sm btn-outline-success" onclick="viewPatient('${p.patientId}')"><i class="bi bi-eye"></i></button></td>
+      </tr>`;
+    });
+    if (!candHtml) candHtml = '<tr><td colspan="7" class="text-center text-muted">ยังไม่มีข้อมูล</td></tr>';
+    document.getElementById('rmCandidatesTable').innerHTML = candHtml;
+
+    // โหลด Stages of Change dashboard
+    loadStageDashboard();
+  } catch (e) {
+    Swal.close();
+    showError(e.toString());
+  }
+}
+
+async function loadStageDashboard() {
+  try {
+    const r = await jsonp({ action: 'getStageDashboard', token: currentUser.token });
+    if (!r.success) return;
+    const { overall, villages } = r.data;
+    const sortedV = villages.slice().sort((a, b) => parseInt(a.villageId) - parseInt(b.villageId));
+    const stageColors = ['#adb5bd', '#ffc107', '#17a2b8', '#0d6efd', '#28a745'];
+
+    // Stage chart (stacked bar per village)
+    if (rmStageChart) rmStageChart.destroy();
+    rmStageChart = new Chart(document.getElementById('rmStageChart').getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sortedV.map(v => 'ม.' + v.villageId),
+        datasets: [
+          { label: '1.เมินเฉย',   data: sortedV.map(v => v['1']), backgroundColor: stageColors[0] },
+          { label: '2.ตระหนัก',   data: sortedV.map(v => v['2']), backgroundColor: stageColors[1] },
+          { label: '3.เตรียมการ', data: sortedV.map(v => v['3']), backgroundColor: stageColors[2] },
+          { label: '4.ลงมือทำ',   data: sortedV.map(v => v['4']), backgroundColor: stageColors[3] },
+          { label: '5.คงสภาพ',    data: sortedV.map(v => v['5']), backgroundColor: stageColors[4] }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+
+    // Readiness chart (line per village)
+    if (rmReadinessChart) rmReadinessChart.destroy();
+    rmReadinessChart = new Chart(document.getElementById('rmReadinessChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: sortedV.map(v => 'ม.' + v.villageId),
+        datasets: [{
+          label: 'Readiness (เฉลี่ย)',
+          data: sortedV.map(v => v.avgReadiness),
+          fill: true,
+          borderColor: '#1a8754',
+          backgroundColor: 'rgba(26,135,84,0.2)',
+          tension: 0.3,
+          pointBackgroundColor: '#0d6efd',
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 10, title: { display: true, text: '0-10' } } }
+      }
+    });
+
+    // Stage table
+    let stHtml = '';
+    sortedV.forEach(v => {
+      stHtml += `<tr>
+        <td>${v.villageName}</td>
+        <td class="text-center">${v.totalPatients}</td>
+        <td class="text-center">${v.totalAssessed}</td>
+        <td class="text-center" style="background:#adb5bd30;">${v['1']}</td>
+        <td class="text-center" style="background:#ffc10730;">${v['2']}</td>
+        <td class="text-center" style="background:#17a2b830;">${v['3']}</td>
+        <td class="text-center" style="background:#0d6efd30;">${v['4']}</td>
+        <td class="text-center" style="background:#28a74530;">${v['5']}</td>
+        <td class="text-center"><strong>${v.avgReadiness || '-'}</strong>/10</td>
+      </tr>`;
+    });
+    stHtml += `<tr class="table-success fw-bold">
+      <td>รวมทั้งตำบล</td>
+      <td class="text-center">${overall['1']+overall['2']+overall['3']+overall['4']+overall['5']+overall.unassessed}</td>
+      <td class="text-center">${overall.totalAssessed}</td>
+      <td class="text-center">${overall['1']}</td>
+      <td class="text-center">${overall['2']}</td>
+      <td class="text-center">${overall['3']}</td>
+      <td class="text-center">${overall['4']}</td>
+      <td class="text-center">${overall['5']}</td>
+      <td class="text-center">${overall.avgReadiness}/10</td>
+    </tr>`;
+    document.getElementById('rmStageTable').innerHTML = stHtml;
+  } catch (e) {
+    console.error('Stage dashboard error:', e);
+  }
+}
+
+/* ---------- Date helpers (ค.ศ. ↔ พ.ศ.) ---------- */
+const THAI_MONTH_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+                          'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+function parseDateStr(s) {
+  if (!s) return null;
+  if (s instanceof Date) return s;
+  // รับได้ทั้ง yyyy-MM-dd และ yyyy-MM-ddTHH:mm...
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return null;
+  return d;
+}
+
+/**
+ * รับ yyyy-MM-dd หรือ Date → ส่งกลับ "d MMM yyyy(BE)"
+ * เช่น "2026-04-25" → "25 เม.ย. 2569"
+ */
+function formatDateBE(s) {
+  const d = parseDateStr(s);
+  if (!d) return '-';
+  const yBE = d.getFullYear() + 543;
+  return d.getDate() + ' ' + THAI_MONTH_SHORT[d.getMonth()] + ' ' + yBE;
+}
+
+function formatDateBE_DMY(s) {
+  const d = parseDateStr(s);
+  if (!d) return '-';
+  const yBE = d.getFullYear() + 543;
+  const dd = ('0' + d.getDate()).slice(-2);
+  const mm = ('0' + (d.getMonth() + 1)).slice(-2);
+  return dd + '/' + mm + '/' + yBE;
+}
+
+/**
+ * คำนวณอายุ (ปี) จาก birthdate string → today
+ */
+function calcAgeYears(birthDateStr) {
+  const d = parseDateStr(birthDateStr);
+  if (!d) return null;
+  const today = new Date();
+  let age = today.getFullYear() - d.getFullYear();
+  const m = today.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+  return age >= 0 && age < 130 ? age : null;
+}
+
+/**
+ * event handler — คำนวณและ fill อายุ + แสดง พ.ศ. กำกับ เมื่อผู้ใช้เลือกวันเกิด
+ */
+function onBirthDateChange() {
+  const v = document.getElementById('pf_BirthDate').value;
+  const beLabel = document.getElementById('pf_BirthDateBE');
+  const ageInput = document.getElementById('pf_Age');
+  if (!v) {
+    if (beLabel) beLabel.textContent = '';
+    return;
+  }
+  if (beLabel) beLabel.textContent = '(พ.ศ. ' + formatDateBE_DMY(v) + ')';
+  const age = calcAgeYears(v);
+  if (age !== null && ageInput) ageInput.value = age;
+}
+
+/* ---------- Patient list ----------
+ * Strategy:
+ *   1. โหลดข้อมูลทั้งหมดจากเซิร์ฟเวอร์ครั้งเดียว (เก็บใน _patientsAll)
+ *   2. filter/sort ฝั่ง client — เร็วและลดการเรียก backend
+ *   3. Render ทีละ batch (50 คน) ผ่าน IntersectionObserver
+ *      ทำให้รายการยาวเป็นพันรายการก็ยังลื่น (virtual-ish scroll)
+ */
+const PATIENT_PAGE_SIZE = 50;
+let _patientsAll = [];       // ข้อมูลดิบจาก backend (หลัง role/village/search filter แล้ว)
+let _patientsFiltered = [];  // หลัง quick filter + sort
+let _patientsRendered = 0;   // จำนวนที่ render แล้ว
+let _quickFilter = 'all';
+let _patientScrollObserver = null;
+let _searchDebounceTimer = null;
+
+function onPatientSearchInput() {
+  // debounce การค้นหา 300ms เพื่อลด request
+  clearTimeout(_searchDebounceTimer);
+  _searchDebounceTimer = setTimeout(loadPatients, 300);
+}
+
+async function loadPatients() {
+  const search = document.getElementById('searchPatient').value;
+  const village = document.getElementById('filterVillage').value;
+  document.getElementById('patientList').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-success"></div></div>';
+  document.getElementById('patientListPager').innerHTML = '';
+  try {
+    const r = await jsonp({ action: 'getPatients', token: currentUser.token, search: search, village: village });
+    if (!r.success) { showError(r.message); return; }
+    _patientsAll = r.data || [];
+    applyPatientFilterSort();
+  } catch (e) { showError(e.toString()); }
+}
+
+function setQuickFilter(name) {
+  _quickFilter = name;
+  document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === name);
+  });
+  applyPatientFilterSort();
+}
+
+function applyPatientFilterSort() {
+  // นับจำนวนต่อ filter สำหรับ badge
+  const counts = { all: _patientsAll.length, notThisYear: 0, hba1cHigh: 0, bpHigh: 0 };
+  _patientsAll.forEach(p => {
+    if (!p.TestedThisYear) counts.notThisYear++;
+    if (p.LatestHbA1c !== null && p.LatestHbA1c !== undefined && p.LatestHbA1c > 8) counts.hba1cHigh++;
+    if ((p.LatestSBP && p.LatestSBP >= 140) || (p.LatestDBP && p.LatestDBP >= 90)) counts.bpHigh++;
+  });
+  const setCnt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setCnt('cntAll', counts.all);
+  setCnt('cntNotThisYear', counts.notThisYear);
+  setCnt('cntHba1cHigh', counts.hba1cHigh);
+  setCnt('cntBpHigh', counts.bpHigh);
+
+  // Filter
+  let list = _patientsAll.slice();
+  if (_quickFilter === 'notThisYear') list = list.filter(p => !p.TestedThisYear);
+  else if (_quickFilter === 'hba1cHigh') list = list.filter(p => p.LatestHbA1c !== null && p.LatestHbA1c !== undefined && p.LatestHbA1c > 8);
+  else if (_quickFilter === 'bpHigh') list = list.filter(p => (p.LatestSBP && p.LatestSBP >= 140) || (p.LatestDBP && p.LatestDBP >= 90));
+
+  // Sort
+  const sortBy = (document.getElementById('sortPatient') || {}).value || 'name';
+  list.sort((a, b) => {
+    const cmp = (x, y) => (x < y ? -1 : x > y ? 1 : 0);
+    const na = (a.FirstName || '') + ' ' + (a.LastName || '');
+    const nb = (b.FirstName || '') + ' ' + (b.LastName || '');
+    switch (sortBy) {
+      case 'hn': return cmp(String(a.HN || '~'), String(b.HN || '~'));
+      case 'hba1c_desc': {
+        const av = a.LatestHbA1c === null || a.LatestHbA1c === undefined ? -Infinity : a.LatestHbA1c;
+        const bv = b.LatestHbA1c === null || b.LatestHbA1c === undefined ? -Infinity : b.LatestHbA1c;
+        return bv - av;
+      }
+      case 'hba1c_asc': {
+        const av = a.LatestHbA1c === null || a.LatestHbA1c === undefined ? Infinity : a.LatestHbA1c;
+        const bv = b.LatestHbA1c === null || b.LatestHbA1c === undefined ? Infinity : b.LatestHbA1c;
+        return av - bv;
+      }
+      case 'visit_desc': return cmp(b.LatestVisitDate || '', a.LatestVisitDate || '');
+      case 'visit_asc':  return cmp(a.LatestVisitDate || '~', b.LatestVisitDate || '~');
+      default: return na.localeCompare(nb, 'th');
+    }
+  });
+
+  _patientsFiltered = list;
+  _patientsRendered = 0;
+  document.getElementById('patientList').innerHTML = '';
+  renderNextPatientBatch();
+
+  // Summary
+  document.getElementById('patientListSummary').textContent =
+    'แสดง ' + _patientsFiltered.length + ' จาก ' + _patientsAll.length + ' คน';
+
+  if (_patientsFiltered.length === 0) {
+    document.getElementById('patientList').innerHTML =
+      '<div class="alert alert-info mb-0">ไม่พบข้อมูลผู้ป่วยตามเงื่อนไขที่เลือก</div>';
+    document.getElementById('patientListPager').innerHTML = '';
+  }
+
+  ensurePatientScrollObserver();
+}
+
+function renderNextPatientBatch() {
+  const container = document.getElementById('patientList');
+  const start = _patientsRendered;
+  const end = Math.min(start + PATIENT_PAGE_SIZE, _patientsFiltered.length);
+  if (start >= end) return;
+
+  let html = '';
+  for (let i = start; i < end; i++) {
+    html += renderPatientCard(_patientsFiltered[i]);
+  }
+  container.insertAdjacentHTML('beforeend', html);
+  _patientsRendered = end;
+
+  const pager = document.getElementById('patientListPager');
+  if (_patientsRendered < _patientsFiltered.length) {
+    pager.innerHTML = 'แสดง ' + _patientsRendered + ' / ' + _patientsFiltered.length + ' คน — เลื่อนลงเพื่อโหลดเพิ่ม';
+  } else {
+    pager.innerHTML = '<i class="bi bi-check2-circle"></i> แสดงครบทั้งหมด ' + _patientsFiltered.length + ' คน';
+  }
+}
+
+function renderPatientCard(p) {
+  const initials = (p.FirstName || ' ').charAt(0) + (p.LastName || ' ').charAt(0);
+  const fullName = (p.Prefix || '') + (p.FirstName || '') + ' ' + (p.LastName || '');
+
+  // HbA1c chip + สี
+  let hbChip = '<span class="chip bg-light text-muted">HbA1c: -</span>';
+  if (p.LatestHbA1c !== null && p.LatestHbA1c !== undefined) {
+    const cls = p.LatestHbA1c < 7 ? 'bg-success' : (p.LatestHbA1c <= 8 ? 'bg-warning text-dark' : 'bg-danger');
+    hbChip = '<span class="chip ' + cls + ' text-white" style="font-weight:600;">HbA1c ' + p.LatestHbA1c + '%</span>';
+  }
+
+  // BP chip + สี
+  let bpChip = '<span class="chip bg-light text-muted">BP: -</span>';
+  if (p.LatestSBP && p.LatestDBP) {
+    const uncontrolled = p.LatestSBP >= 140 || p.LatestDBP >= 90;
+    const cls = uncontrolled ? 'bg-danger text-white' : 'bg-success text-white';
+    bpChip = '<span class="chip ' + cls + '" style="font-weight:600;">BP ' + p.LatestSBP + '/' + p.LatestDBP + '</span>';
+  }
+
+  // วันตรวจล่าสุด (แสดง พ.ศ.)
+  let lastVisit = '-';
+  if (p.LatestVisitDate) {
+    lastVisit = formatDateBE(p.LatestVisitDate);
+    if (!p.TestedThisYear) lastVisit += ' <span class="badge bg-warning text-dark">ยังไม่ตรวจปีนี้</span>';
+  } else {
+    lastVisit = '<span class="badge bg-warning text-dark">ยังไม่ตรวจปีนี้</span>';
+  }
+
+  return `<div class="card patient-card mb-2" onclick="viewPatient('${p.PatientID}')">
+    <div class="card-body d-flex align-items-center">
+      <div class="avatar-circle me-3">${initials}</div>
+      <div class="flex-grow-1">
+        <div class="fw-bold">${fullName}</div>
+        <small class="text-muted">
+          <i class="bi bi-house-door"></i> ${p.VillageName || ''}${p.HN ? ' · HN: ' + p.HN : ''}
+          · ตรวจล่าสุด: ${lastVisit}
+        </small>
+        <div class="mt-1 d-flex gap-1 flex-wrap">${hbChip}${bpChip}</div>
+      </div>
+      <i class="bi bi-chevron-right text-muted"></i>
+    </div></div>`;
+}
+
+/**
+ * ใช้ IntersectionObserver ตรวจจับเมื่อ sentinel โผล่ใน viewport
+ * แล้ว render batch ถัดไป — ทำงานเหมือน virtual scroll / infinite scroll
+ */
+function ensurePatientScrollObserver() {
+  if (_patientScrollObserver) return;
+  const sentinel = document.getElementById('patientListSentinel');
+  if (!sentinel || !('IntersectionObserver' in window)) return;
+  _patientScrollObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) renderNextPatientBatch();
+    });
+  }, { rootMargin: '200px' });
+  _patientScrollObserver.observe(sentinel);
+}
+
+/* ---------- Patient form ---------- */
+/**
+ * เปิดฟอร์มสำหรับ "เพิ่มผู้ป่วยใหม่" (ล้างข้อมูลก่อน)
+ * ใช้แทน showPage('patientForm') โดยตรงจากปุ่ม/เมนูที่ต้องการเพิ่มใหม่
+ */
+function openNewPatientForm() {
+  // ตรวจสิทธิ์ก่อน (กันกด UI ที่ยังไม่ได้ซ่อน)
+  if (currentUser && (currentUser.role === 'viewer' || currentUser.role === 'osm')) {
+    showError('บทบาทนี้ไม่มีสิทธิ์เพิ่มผู้ป่วย');
+    return;
+  }
+  resetPatientForm();
+  showPage('patientForm');
+}
+
+function resetPatientForm() {
+  document.getElementById('patientFormTitle').innerText = 'เพิ่มผู้ป่วยใหม่';
+  ['pf_PatientID','pf_HN','pf_CID','pf_FirstName','pf_LastName','pf_BirthDate','pf_Age','pf_Phone','pf_Address','pf_DiagnosisDate','pf_PhotoURL']
+    .forEach(id => document.getElementById(id).value = '');
+  ['pf_HT','pf_DLP','pf_CKD'].forEach(id => document.getElementById(id).checked = false);
+  document.getElementById('pf_PhotoPreview').style.display = 'none';
+  document.getElementById('pf_Photo').value = '';
+  // ปลดล็อกช่องหมู่บ้าน (กรณีถูก disable ไว้จากการแก้ไขของ อสม. ครั้งก่อน)
+  const villageSelect = document.getElementById('pf_Village');
+  if (villageSelect) villageSelect.disabled = false;
+  // ล้าง label พ.ศ.
+  const beLabel = document.getElementById('pf_BirthDateBE');
+  if (beLabel) beLabel.textContent = '';
+}
+
+async function savePatient() {
+  const cid = document.getElementById('pf_CID').value.trim();
+  const fn  = document.getElementById('pf_FirstName').value.trim();
+  const ln  = document.getElementById('pf_LastName').value.trim();
+  if (!cid || !fn || !ln) { showError('กรุณากรอกเลขบัตร ปชช. ชื่อ และนามสกุล'); return; }
+
+  showLoading('กำลังบันทึกข้อมูลผู้ป่วย...');
+
+  // Upload photo if any
+  const photoFile = document.getElementById('pf_Photo').files[0];
+  let photoURL = document.getElementById('pf_PhotoURL').value || '';
+  if (photoFile) {
+    const b64 = await fileToBase64(photoFile);
+    const up = await apiCall({ action: 'uploadImage', token: currentUser.token, fileName: photoFile.name, mimeType: photoFile.type, fileData: b64 });
+    if (up.success) photoURL = up.data.url;
+  }
+
+  const data = {
+    PatientID: document.getElementById('pf_PatientID').value,
+    HN: document.getElementById('pf_HN').value,
+    CID: cid,
+    Prefix: document.getElementById('pf_Prefix').value,
+    FirstName: fn,
+    LastName: ln,
+    Gender: document.getElementById('pf_Gender').value,
+    BirthDate: document.getElementById('pf_BirthDate').value,
+    Age: document.getElementById('pf_Age').value,
+    Village: document.getElementById('pf_Village').value,
+    Address: document.getElementById('pf_Address').value,
+    Phone: document.getElementById('pf_Phone').value,
+    DiagnosisDate: document.getElementById('pf_DiagnosisDate').value,
+    Diabetes_Type: document.getElementById('pf_Diabetes_Type').value,
+    HT_Comorbid: document.getElementById('pf_HT').checked,
+    DLP_Comorbid: document.getElementById('pf_DLP').checked,
+    CKD_Comorbid: document.getElementById('pf_CKD').checked,
+    PhotoURL: photoURL
+  };
+
+  try {
+    const r = await apiCall({ action: 'savePatient', token: currentUser.token, data: JSON.stringify(data) });
+    Swal.close();
+    if (r.success) {
+      await showSuccess(r.message);
+      showPage('patients');
+    } else { showError(r.message); }
+  } catch (e) { showError(e.toString()); }
+}
+
+/* ---------- Patient detail ---------- */
+async function viewPatient(id) {
+  showLoading('กำลังโหลดข้อมูลผู้ป่วย...');
+  try {
+    const r = await jsonp({ action: 'getPatient', token: currentUser.token, patientId: id });
+    Swal.close();
+    if (!r.success) { showError(r.message); return; }
+    currentPatient = r.data;
+    renderPatientDetail(currentPatient);
+    // Set today defaults
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('v_VisitDate').value = today;
+    document.getElementById('l_LabDate').value = today;
+    document.getElementById('ls_Date').value = today;
+    document.getElementById('sc_Date').value = today;
+    // Reset stage selection
+    document.getElementById('sc_Stage').value = '';
+    document.querySelectorAll('.stage-step').forEach(el => el.classList.remove('selected'));
+    renderStageUI();
+    showPage('detail');
+    switchTabById('Visit');
+  } catch (e) { showError(e.toString()); }
+}
+
+function switchTabById(tabName) {
+  document.querySelectorAll('.tab-content-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('#detailTabs .nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab' + tabName).style.display = 'block';
+  document.querySelectorAll('#detailTabs .nav-link')[0].classList.add('active');
+}
+
+function renderPatientDetail(p) {
+  const initials = (p.FirstName || ' ').charAt(0) + (p.LastName || ' ').charAt(0);
+  // สิทธิ์การแก้ไข: admin/staff แก้ได้ทุกคน, osm แก้ได้เฉพาะผู้ป่วยในหมู่บ้านตนเอง, viewer ห้าม
+  let canEdit = false;
+  if (currentUser) {
+    if (currentUser.role === 'admin' || currentUser.role === 'staff') canEdit = true;
+    else if (currentUser.role === 'osm' && String(p.Village) === String(currentUser.village)) canEdit = true;
+  }
+  const editBtn = canEdit
+    ? `<button class="btn btn-sm btn-outline-success" onclick="editPatient()"><i class="bi bi-pencil"></i> แก้ไข</button>`
+    : '';
+  document.getElementById('patientDetail').innerHTML = `
+    <div class="d-flex align-items-center">
+      <div class="avatar-circle me-3" style="width:60px;height:60px;font-size:1.3rem;">${initials}</div>
+      <div class="flex-grow-1">
+        <h5 class="mb-1">${p.Prefix || ''}${p.FirstName} ${p.LastName}</h5>
+        <div class="small text-muted"><i class="bi bi-card-heading"></i> HN: ${p.HN || '-'} · CID: ${p.CID || '-'}</div>
+        <div class="small"><i class="bi bi-house-door"></i> ${p.VillageName || ''} ${p.Address ? '· ' + p.Address : ''}</div>
+      </div>
+      ${editBtn}
+    </div>
+    <div class="row mt-3">
+      <div class="col-6 col-md-3"><span class="chip chip-blue">เพศ: ${p.Gender || '-'}</span></div>
+      <div class="col-6 col-md-3"><span class="chip chip-green">อายุ: ${(calcAgeYears(p.BirthDate) !== null ? calcAgeYears(p.BirthDate) : (p.Age || '-'))} ปี</span></div>
+      <div class="col-6 col-md-3"><span class="chip chip-blue">${p.Diabetes_Type || '-'}</span></div>
+      <div class="col-6 col-md-3"><span class="chip chip-green">เบอร์: ${p.Phone || '-'}</span></div>
+    </div>
+    <div class="row mt-2 small text-muted">
+      <div class="col-6 col-md-4"><i class="bi bi-calendar-heart"></i> วันเกิด: ${formatDateBE(p.BirthDate)}</div>
+      <div class="col-6 col-md-4"><i class="bi bi-calendar-check"></i> วันที่วินิจฉัย: ${formatDateBE(p.DiagnosisDate)}</div>
+    </div>`;
+}
+
+function editPatient() {
+  const p = currentPatient;
+  if (!p) { showError('ไม่พบข้อมูลผู้ป่วย'); return; }
+
+  // ตรวจสิทธิ์การแก้ไข (client-side)
+  if (currentUser) {
+    if (currentUser.role === 'viewer') {
+      showError('บทบาทของคุณไม่มีสิทธิ์แก้ไขข้อมูลผู้ป่วย');
+      return;
+    }
+    if (currentUser.role === 'osm' && String(p.Village) !== String(currentUser.village)) {
+      showError('อสม. แก้ไขได้เฉพาะผู้ป่วยในหมู่บ้านของตนเองเท่านั้น');
+      return;
+    }
+  }
+
+  document.getElementById('patientFormTitle').innerText = 'แก้ไขข้อมูลผู้ป่วย';
+  document.getElementById('pf_PatientID').value = p.PatientID;
+  document.getElementById('pf_HN').value = p.HN || '';
+  document.getElementById('pf_CID').value = p.CID || '';
+  document.getElementById('pf_Prefix').value = p.Prefix || 'นาย';
+  document.getElementById('pf_FirstName').value = p.FirstName || '';
+  document.getElementById('pf_LastName').value = p.LastName || '';
+  document.getElementById('pf_Gender').value = p.Gender || 'ชาย';
+  document.getElementById('pf_BirthDate').value = p.BirthDate || '';
+  document.getElementById('pf_Age').value = p.Age || '';
+  // อัปเดต label พ.ศ. และคำนวณอายุอัตโนมัติจากวันเกิด
+  onBirthDateChange();
+  document.getElementById('pf_Phone').value = p.Phone || '';
+  document.getElementById('pf_Village').value = p.Village || '1';
+  document.getElementById('pf_Address').value = p.Address || '';
+  document.getElementById('pf_DiagnosisDate').value = p.DiagnosisDate || '';
+  document.getElementById('pf_Diabetes_Type').value = p.Diabetes_Type || 'Type 2 DM';
+  document.getElementById('pf_HT').checked = !!p.HT_Comorbid;
+  document.getElementById('pf_DLP').checked = !!p.DLP_Comorbid;
+  document.getElementById('pf_CKD').checked = !!p.CKD_Comorbid;
+  document.getElementById('pf_PhotoURL').value = p.PhotoURL || '';
+
+  // แสดงตัวอย่างรูปถ้ามี
+  const previewEl = document.getElementById('pf_PhotoPreview');
+  if (previewEl) {
+    if (p.PhotoURL) { previewEl.src = p.PhotoURL; previewEl.style.display = 'block'; }
+    else { previewEl.style.display = 'none'; }
+  }
+  const photoInput = document.getElementById('pf_Photo');
+  if (photoInput) photoInput.value = '';
+
+  // ถ้าเป็น อสม. — ล็อกช่องหมู่บ้าน (แก้ไม่ได้, เปลี่ยนหมู่บ้านต้องให้ จนท./admin ทำ)
+  const villageSelect = document.getElementById('pf_Village');
+  if (villageSelect) {
+    villageSelect.disabled = (currentUser && currentUser.role === 'osm');
+  }
+
+  showPage('patientForm');
+}
+
+/* ---------- Save visit / lab / lifestyle ---------- */
+function calcBMI() {
+  const w = parseFloat(document.getElementById('v_Weight').value);
+  const h = parseFloat(document.getElementById('v_Height').value);
+  if (w && h) {
+    const bmi = w / ((h / 100) * (h / 100));
+    document.getElementById('v_BMI').value = bmi.toFixed(2);
+  }
+}
+
+async function saveVisit() {
+  if (!currentPatient) { showError('ไม่พบข้อมูลผู้ป่วย'); return; }
+  showLoading('กำลังบันทึกข้อมูลเยี่ยม...');
+
+  const photoFile = document.getElementById('v_Photo').files[0];
+  let photoURL = '';
+  if (photoFile) {
+    const b64 = await fileToBase64(photoFile);
+    const up = await apiCall({ action: 'uploadImage', token: currentUser.token, fileName: photoFile.name, mimeType: photoFile.type, fileData: b64 });
+    if (up.success) photoURL = up.data.url;
+  }
+
+  const data = {
+    PatientID: currentPatient.PatientID,
+    VisitDate: document.getElementById('v_VisitDate').value,
+    Weight: document.getElementById('v_Weight').value,
+    Height: document.getElementById('v_Height').value,
+    WaistCircumference: document.getElementById('v_Waist').value,
+    DTX: document.getElementById('v_DTX').value,
+    DTX_Type: document.getElementById('v_DTX_Type').value,
+    SBP: document.getElementById('v_SBP').value,
+    DBP: document.getElementById('v_DBP').value,
+    PulseRate: document.getElementById('v_Pulse').value,
+    RespiratoryRate: document.getElementById('v_RR').value,
+    Temperature: document.getElementById('v_Temp').value,
+    O2Sat: document.getElementById('v_O2').value,
+    Notes: document.getElementById('v_Notes').value,
+    PhotoURL: photoURL
+  };
+
+  try {
+    const r = await apiCall({ action: 'saveVisit', token: currentUser.token, data: JSON.stringify(data) });
+    Swal.close();
+    if (r.success) {
+      await showSuccess(r.message + (r.data.BMI ? ' (BMI=' + r.data.BMI + ')' : ''));
+      // reset visit form
+      ['v_Weight','v_Height','v_BMI','v_Waist','v_DTX','v_SBP','v_DBP','v_Pulse','v_RR','v_Temp','v_O2','v_Notes']
+        .forEach(id => document.getElementById(id).value = '');
+      document.getElementById('v_Photo').value = '';
+      document.getElementById('v_PhotoPreview').style.display = 'none';
+    } else { showError(r.message); }
+  } catch (e) { showError(e.toString()); }
+}
+
+async function saveLab() {
+  if (!currentPatient) { showError('ไม่พบข้อมูลผู้ป่วย'); return; }
+  showLoading('กำลังบันทึกผล Lab...');
+
+  const photoFile = document.getElementById('l_Photo').files[0];
+  let photoURL = '';
+  if (photoFile) {
+    const b64 = await fileToBase64(photoFile);
+    const up = await apiCall({ action: 'uploadImage', token: currentUser.token, fileName: photoFile.name, mimeType: photoFile.type, fileData: b64 });
+    if (up.success) photoURL = up.data.url;
+  }
+
+  const data = {
+    PatientID: currentPatient.PatientID,
+    LabDate: document.getElementById('l_LabDate').value,
+    FBS: document.getElementById('l_FBS').value,
+    HbA1c: document.getElementById('l_HbA1c').value,
+    Cholesterol: document.getElementById('l_Chol').value,
+    Triglyceride: document.getElementById('l_Tri').value,
+    HDL: document.getElementById('l_HDL').value,
+    LDL: document.getElementById('l_LDL').value,
+    BUN: document.getElementById('l_BUN').value,
+    Creatinine: document.getElementById('l_Cr').value,
+    eGFR: document.getElementById('l_eGFR').value,
+    UrineAlbumin: document.getElementById('l_UA').value,
+    ALT: document.getElementById('l_ALT').value,
+    AST: document.getElementById('l_AST').value,
+    Potassium: document.getElementById('l_K').value,
+    Sodium: document.getElementById('l_Na').value,
+    Notes: document.getElementById('l_Notes').value,
+    PhotoURL: photoURL
+  };
+
+  try {
+    const r = await apiCall({ action: 'saveLab', token: currentUser.token, data: JSON.stringify(data) });
+    Swal.close();
+    if (r.success) {
+      await showSuccess(r.message);
+      ['l_FBS','l_HbA1c','l_Chol','l_Tri','l_HDL','l_LDL','l_BUN','l_Cr','l_eGFR','l_UA','l_ALT','l_AST','l_K','l_Na','l_Notes']
+        .forEach(id => document.getElementById(id).value = '');
+      document.getElementById('l_Photo').value = '';
+    } else { showError(r.message); }
+  } catch (e) { showError(e.toString()); }
+}
+
+async function saveLifestyle() {
+  if (!currentPatient) { showError('ไม่พบข้อมูลผู้ป่วย'); return; }
+  showLoading('กำลังบันทึก 6 เสาหลัก...');
+  const data = {
+    PatientID: currentPatient.PatientID,
+    RecordDate: document.getElementById('ls_Date').value,
+    Pillar1_Nutrition_Score: document.getElementById('ls_P1').value,
+    Pillar1_Notes: document.getElementById('ls_P1_Notes').value,
+    Pillar2_Exercise_Score: document.getElementById('ls_P2').value,
+    Pillar2_Minutes: document.getElementById('ls_P2_Min').value,
+    Pillar2_Notes: document.getElementById('ls_P2_Notes').value,
+    Pillar3_Sleep_Score: document.getElementById('ls_P3').value,
+    Pillar3_Hours: document.getElementById('ls_P3_Hrs').value,
+    Pillar3_Notes: document.getElementById('ls_P3_Notes').value,
+    Pillar4_Stress_Score: document.getElementById('ls_P4').value,
+    Pillar4_Notes: document.getElementById('ls_P4_Notes').value,
+    Pillar5_Substance_Score: document.getElementById('ls_P5').value,
+    Pillar5_Smoking: document.getElementById('ls_P5_Smoke').value,
+    Pillar5_Alcohol: document.getElementById('ls_P5_Alc').value,
+    Pillar5_Notes: document.getElementById('ls_P5_Notes').value,
+    Pillar6_Social_Score: document.getElementById('ls_P6').value,
+    Pillar6_Notes: document.getElementById('ls_P6_Notes').value
+  };
+  try {
+    const r = await apiCall({ action: 'saveLifestyle', token: currentUser.token, data: JSON.stringify(data) });
+    Swal.close();
+    if (r.success) {
+      await showSuccess(r.message + ' (คะแนนรวม ' + r.data.TotalScore + '/60)');
+    } else { showError(r.message); }
+  } catch (e) { showError(e.toString()); }
+}
+
+/* ---------- Stages of Change + MI ---------- */
+const MI_GUIDANCE = {
+  1: {
+    title: 'ขั้นเมินเฉย (Pre-contemplation) — ยังไม่รู้ตัวหรือต่อต้าน',
+    goal: 'เป้าหมาย: สร้างความตระหนัก เปิดพื้นที่ให้ผู้ป่วยคิด โดยไม่กดดัน',
+    tips: [
+      { tag: 'O', text: 'ถามปลายเปิด: "คุณคิดยังไงกับสุขภาพตัวเองตอนนี้?" "มีใครเคยบอกว่าเป็นห่วงคุณบ้างไหม?"' },
+      { tag: 'R', text: 'สะท้อนความรู้สึก: "เข้าใจครับ เรื่องเบาหวานอาจยังไม่รู้สึกเร่งด่วนสำหรับคุณ"' },
+      { tag: 'A', text: 'ชื่นชม: "ขอบคุณที่สละเวลามาคุยกับผมในวันนี้"' },
+      { tag: 'Spirit', text: 'เคารพ autonomy ให้ข้อมูลเมื่อผู้ป่วยอนุญาต ไม่ขู่หรือเทศน์ เน้นสร้างความสัมพันธ์' }
+    ]
+  },
+  2: {
+    title: 'ขั้นตระหนักรู้/ลังเลใจ (Contemplation) — เริ่มเห็นปัญหาแต่ยังไม่ทำ',
+    goal: 'เป้าหมาย: ชั่งน้ำหนักข้อดี-ข้อเสีย (Decisional balance) กระตุ้น Change Talk',
+    tips: [
+      { tag: 'O', text: 'ถาม: "ถ้าคุณเปลี่ยนได้ ชีวิตจะต่างจากตอนนี้อย่างไร?" "อะไรที่ทำให้คุณกังวลหากไม่เปลี่ยน?"' },
+      { tag: 'R', text: 'สะท้อนสองด้าน: "ด้านหนึ่งคุณอยากให้สุขภาพดีขึ้น อีกด้านก็กลัวว่ามันจะยาก"' },
+      { tag: 'S', text: 'สรุปเหตุผลที่จะเปลี่ยนของผู้ป่วย และสะท้อนกลับเพื่อเสริมแรงจูงใจ' },
+      { tag: 'Tool', text: 'ใช้ Decisional Balance Sheet: ข้อดี/ข้อเสีย ของ "เปลี่ยน" vs "ไม่เปลี่ยน"' }
+    ]
+  },
+  3: {
+    title: 'ขั้นเตรียมการ (Preparation) — ตัดสินใจเปลี่ยน กำลังวางแผน',
+    goal: 'เป้าหมาย: ช่วยสร้างแผนที่ชัดเจน (SMART) และระบุอุปสรรค',
+    tips: [
+      { tag: 'O', text: 'ถาม: "คุณจะเริ่มต้นจากอะไรก่อน?" "วันไหน เวลาไหน กับใคร?"' },
+      { tag: 'A', text: 'ชื่นชม: "ที่คุณตัดสินใจแบบนี้ต้องใช้ความกล้านะครับ"' },
+      { tag: 'Tool', text: 'ตั้ง SMART goal: Specific, Measurable, Achievable, Relevant, Time-bound' },
+      { tag: 'Plan', text: 'วางแผนรับมืออุปสรรค (If-then plan): "ถ้า...แล้วฉันจะ..."' }
+    ]
+  },
+  4: {
+    title: 'ขั้นลงมือทำ (Action) — เปลี่ยนจริงจัง < 6 เดือน',
+    goal: 'เป้าหมาย: เสริมแรง ให้กำลังใจ ติดตามใกล้ชิด ป้องกันการถอยกลับ',
+    tips: [
+      { tag: 'A', text: 'Affirm บ่อยๆ: "คุณทำได้ดีมาก นี่เป็นสิ่งที่ไม่ง่ายเลย"' },
+      { tag: 'O', text: 'ถาม: "อะไรที่ช่วยให้คุณทำได้? มีช่วงไหนที่ท้าทายที่สุด?"' },
+      { tag: 'R', text: 'สะท้อนความสำเร็จ: "แสดงว่าคุณมีวินัยมาก"' },
+      { tag: 'Plan', text: 'วางแผนจัดการ high-risk situations และหาตัวช่วย (social support)' }
+    ]
+  },
+  5: {
+    title: 'ขั้นคงสภาพ (Maintenance) — คงพฤติกรรมใหม่ > 6 เดือน',
+    goal: 'เป้าหมาย: ป้องกัน relapse สร้างเอกลักษณ์ใหม่ "ฉันเป็นคนที่..."',
+    tips: [
+      { tag: 'A', text: 'ชื่นชมอัตลักษณ์ใหม่: "ตอนนี้คุณเป็นคนที่ดูแลตัวเองได้ดีจริงๆ"' },
+      { tag: 'O', text: 'ถาม: "จะทำอย่างไรหากกลับมาเหนื่อยกับมัน?" "ใครคือกำลังใจของคุณ?"' },
+      { tag: 'Plan', text: 'วางแผนป้องกัน relapse: signal warning, coping, support system' },
+      { tag: 'S', text: 'สรุปทบทวนความสำเร็จระยะยาว และมองไปข้างหน้า' }
+    ]
+  }
+};
+
+function selectStage(n) {
+  document.querySelectorAll('.stage-step').forEach(el => el.classList.remove('selected'));
+  document.querySelector('.stage-step[data-stage="' + n + '"]').classList.add('selected');
+  document.getElementById('sc_Stage').value = n;
+  renderStageUI();
+}
+
+function renderStageUI() {
+  const stage = document.getElementById('sc_Stage').value;
+  const container = document.getElementById('miGuidance');
+  if (!stage) {
+    container.innerHTML = '<div class="alert alert-light small"><i class="bi bi-info-circle"></i> เลือกขั้นการเปลี่ยนแปลงด้านบน ระบบจะแสดงเทคนิค MI ที่เหมาะสม</div>';
+    return;
+  }
+  const g = MI_GUIDANCE[stage];
+  let html = '<div class="mi-card"><h6><i class="bi bi-lightbulb-fill"></i> ' + g.title + '</h6>';
+  html += '<div class="small text-muted mb-2">' + g.goal + '</div>';
+  html += '<ul class="mb-0 small" style="padding-left:1rem;">';
+  g.tips.forEach(t => {
+    html += '<li class="mb-1"><span class="oars-tag">' + t.tag + '</span>' + t.text + '</li>';
+  });
+  html += '</ul></div>';
+  html += '<div class="alert alert-light small mb-0"><strong>OARS:</strong> <span class="oars-tag">O</span>pen-ended · <span class="oars-tag">A</span>ffirm · <span class="oars-tag">R</span>eflect · <span class="oars-tag">S</span>ummarize</div>';
+  container.innerHTML = html;
+}
+
+async function saveStage() {
+  if (!currentPatient) { showError('ไม่พบข้อมูลผู้ป่วย'); return; }
+  const stage = document.getElementById('sc_Stage').value;
+  if (!stage) { showError('กรุณาเลือกขั้นการเปลี่ยนแปลง'); return; }
+
+  showLoading('กำลังบันทึก Stage of Change...');
+  const data = {
+    PatientID: currentPatient.PatientID,
+    RecordDate: document.getElementById('sc_Date').value,
+    Domain: document.getElementById('sc_Domain').value,
+    Stage: stage,
+    Importance: document.getElementById('sc_Importance').value,
+    Confidence: document.getElementById('sc_Confidence').value,
+    ChangeTalk: document.getElementById('sc_ChangeTalk').value,
+    Barriers: document.getElementById('sc_Barriers').value,
+    NextPlan: document.getElementById('sc_NextPlan').value,
+    MI_Notes: document.getElementById('sc_MINotes').value,
+    ReviewDate: document.getElementById('sc_ReviewDate').value
+  };
+  try {
+    const r = await apiCall({ action: 'saveStage', token: currentUser.token, data: JSON.stringify(data) });
+    Swal.close();
+    if (r.success) {
+      await showSuccess(r.message + ' (Readiness: ' + r.data.Readiness + '/10)');
+    } else {
+      showError(r.message);
+    }
+  } catch (e) { showError(e.toString()); }
+}
+
+/* ---------- History ---------- */
+async function loadHistory() {
+  if (!currentPatient) return;
+  document.getElementById('historyContent').innerHTML = '<div class="text-center p-3"><div class="spinner-border text-success"></div></div>';
+  try {
+    const r = await jsonp({ action: 'getVisitHistory', token: currentUser.token, patientId: currentPatient.PatientID });
+    if (!r.success) { showError(r.message); return; }
+
+    let html = '<div class="card border-0 shadow-sm mb-3"><div class="card-body">';
+    html += '<h6 class="text-success"><i class="bi bi-activity"></i> ประวัติการตรวจวัด (' + r.data.visits.length + ' ครั้ง)</h6>';
+    if (r.data.visits.length === 0) html += '<div class="text-muted small">ยังไม่มีข้อมูล</div>';
+    else {
+      html += '<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-light"><tr><th>วันที่</th><th>น้ำหนัก</th><th>BMI</th><th>เอว</th><th>DTX</th><th>BP</th><th>ผู้บันทึก</th></tr></thead><tbody>';
+      r.data.visits.forEach(v => {
+        html += `<tr><td>${formatDateBE(v.VisitDate)}</td><td>${v.Weight || '-'}</td><td>${v.BMI || '-'}</td><td>${v.WaistCircumference || '-'}</td><td>${v.DTX || '-'}</td><td>${v.SBP || '-'}/${v.DBP || '-'}</td><td>${v.RecordedBy || '-'}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+    html += '</div></div>';
+
+    html += '<div class="card border-0 shadow-sm mb-3"><div class="card-body">';
+    html += '<h6 class="text-success"><i class="bi bi-file-medical"></i> ประวัติผล Lab (' + r.data.labs.length + ' ครั้ง)</h6>';
+    if (r.data.labs.length === 0) html += '<div class="text-muted small">ยังไม่มีข้อมูล</div>';
+    else {
+      html += '<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-light"><tr><th>วันที่</th><th>FBS</th><th>HbA1c</th><th>Chol</th><th>LDL</th><th>eGFR</th><th>ผู้บันทึก</th></tr></thead><tbody>';
+      r.data.labs.forEach(l => {
+        html += `<tr><td>${formatDateBE(l.LabDate)}</td><td>${l.FBS || '-'}</td><td>${l.HbA1c || '-'}</td><td>${l.Cholesterol || '-'}</td><td>${l.LDL || '-'}</td><td>${l.eGFR || '-'}</td><td>${l.RecordedBy || '-'}</td></tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+    html += '</div></div>';
+
+    html += '<div class="card border-0 shadow-sm"><div class="card-body">';
+    html += '<h6 class="text-success"><i class="bi bi-stars"></i> ประวัติ 6 เสาหลัก (' + r.data.lifestyle.length + ' ครั้ง)</h6>';
+    if (r.data.lifestyle.length === 0) html += '<div class="text-muted small">ยังไม่มีข้อมูล</div>';
+    else {
+      html += '<div class="table-responsive"><table class="table table-sm table-hover"><thead class="table-light"><tr><th>วันที่</th><th>อาหาร</th><th>ออกกำลัง</th><th>นอน</th><th>เครียด</th><th>สารเสพติด</th><th>สังคม</th><th>รวม</th></tr></thead><tbody>';
+      r.data.lifestyle.forEach(v => {
+        html += `<tr><td>${formatDateBE(v.RecordDate)}</td><td>${v.Pillar1_Nutrition_Score}</td><td>${v.Pillar2_Exercise_Score}</td><td>${v.Pillar3_Sleep_Score}</td><td>${v.Pillar4_Stress_Score}</td><td>${v.Pillar5_Substance_Score}</td><td>${v.Pillar6_Social_Score}</td><td><strong>${v.TotalScore}/60</strong></td></tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+    html += '</div></div>';
+    document.getElementById('historyContent').innerHTML = html;
+  } catch (e) { showError(e.toString()); }
+}
+
+/* ---------- Audit Log ---------- */
+async function loadAuditLog() {
+  try {
+    const r = await jsonp({ action: 'getAuditLog', token: currentUser.token });
+    if (!r.success) { showError(r.message); return; }
+    let html = '';
+    r.data.forEach(l => {
+      html += `<tr><td class="small">${l.Timestamp}</td><td>${l.Username}</td><td><span class="chip chip-blue">${l.Action}</span></td><td>${l.Target}</td><td class="small">${l.TargetID}</td><td class="small text-truncate" style="max-width:200px;">${(l.Details || '').substring(0,100)}</td></tr>`;
+    });
+    document.getElementById('logTable').innerHTML = html;
+  } catch (e) { showError(e.toString()); }
+}
+
+/* ---------- File helpers ---------- */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Photo previews
+['pf_Photo','v_Photo','l_Photo'].forEach(id => {
+  document.addEventListener('change', function(e) {
+    if (e.target.id !== id) return;
+    const prevId = id + 'Preview';
+    const preview = document.getElementById(prevId);
+    if (e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = ev => { preview.src = ev.target.result; preview.style.display = 'block'; };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  });
+});
+
+/* ============================================================
+   EXCEL IMPORT (ผู้ป่วย / ผล Lab)
+   - ใช้ SheetJS อ่านไฟล์ฝั่ง client
+   - ส่งเป็น batch (20 แถว/ครั้ง) ผ่าน JSONP เพื่อเลี่ยง URL length limit
+   ============================================================ */
+let importMode = 'patient'; // 'patient' | 'lab'
+let importRows = [];
+
+const IMPORT_SPECS = {
+  patient: {
+    title: 'นำเข้าข้อมูลผู้ป่วยจาก Excel',
+    hint: 'คอลัมน์: hn, cid, prefix, firstName, lastName, gender, birthdate, villageId, address, phone, diagnosisDate, icd10, icd10Description, comorbid, emergencyContact, emergencyPhone',
+    previewCols: ['hn','cid','prefix','firstName','lastName','gender','birthdate','villageId','diagnosisDate','icd10'],
+    action: 'importPatients',
+    requireAdmin: true
+  },
+  lab: {
+    title: 'นำเข้าผล Lab จาก Excel',
+    hint: 'คอลัมน์: hn, labDate, fbs, hba1c, cholesterol, triglyceride, hdl, ldl, creatinine, egfr, uacr, alt, ast, notes',
+    previewCols: ['hn','labDate','fbs','hba1c','cholesterol','triglyceride','hdl','ldl','creatinine','egfr','uacr'],
+    action: 'importLab',
+    requireAdmin: false
+  }
+};
+
+function openImportModal(mode) {
+  if (mode === 'patient' && currentUser.role === 'osm') {
+    showError('เฉพาะ admin/staff เท่านั้นที่นำเข้าข้อมูลผู้ป่วยได้');
+    return;
+  }
+  importMode = mode;
+  importRows = [];
+  const spec = IMPORT_SPECS[mode];
+  document.getElementById('importTitle').innerText = spec.title;
+  document.getElementById('importHint').innerText = spec.hint;
+  document.getElementById('importFile').value = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importProgress').style.display = 'none';
+  document.getElementById('importResult').innerHTML = '';
+  document.getElementById('btnStartImport').disabled = true;
+  new bootstrap.Modal(document.getElementById('importModal')).show();
+}
+
+function onImportFileChange() {
+  const file = document.getElementById('importFile').files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, { type: 'array', cellDates: true });
+
+      // ชื่อชีทที่ต้องการตามโหมด
+      const preferredSheets = importMode === 'patient'
+        ? ['Patients', 'patient']
+        : ['LabResults', 'Lab', 'lab'];
+      const expectedFields = importMode === 'patient'
+        ? ['hn','cid','firstName','lastName','villageId']
+        : ['hn','labDate','fbs','hba1c'];
+
+      // หาชีทที่ตรง หรือชีทแรกที่มีข้อมูล (ข้าม Sheet1 ว่าง, ข้าม Reference sheets)
+      let ws = null, wsName = null;
+      for (const name of preferredSheets) {
+        if (wb.Sheets[name]) { ws = wb.Sheets[name]; wsName = name; break; }
+      }
+      if (!ws) {
+        for (const name of wb.SheetNames) {
+          if (/reference|คู่มือ|guide|instruction/i.test(name)) continue;
+          const sheet = wb.Sheets[name];
+          const test = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
+          if (test.length > 0 && Object.keys(test[0]).length > 1) {
+            ws = sheet; wsName = name; break;
+          }
+        }
+      }
+      if (!ws) { showError('ไม่พบข้อมูลในไฟล์'); return; }
+
+      // ลองอ่านแบบ default (แถวแรกเป็น header)
+      let rows = XLSX.utils.sheet_to_json(ws, { defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+
+      // ตรวจว่า header ที่ได้มี field ที่คาดไว้หรือไม่
+      const hasExpected = rows.length > 0 && expectedFields.some(f => rows[0].hasOwnProperty(f));
+
+      if (!hasExpected && rows.length > 0) {
+        // อ่านเป็น array แล้วใช้แถวที่ 2 เป็น header (กรณี template ที่มี Thai header แถวแรก)
+        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+        if (rawRows.length >= 2) {
+          const headers = rawRows[1].map(h => String(h || '').trim());
+          const checkMatch = expectedFields.some(f => headers.includes(f));
+          if (checkMatch) {
+            rows = [];
+            for (let i = 2; i < rawRows.length; i++) {
+              const obj = {};
+              headers.forEach((h, idx) => { if (h) obj[h] = rawRows[i][idx] !== undefined ? rawRows[i][idx] : ''; });
+              rows.push(obj);
+            }
+          }
+        }
+      }
+
+      const rawRows = rows.filter(r => Object.values(r).some(v => v !== '' && v !== null && v !== undefined));
+
+      // ===== CLIENT-SIDE DEDUP (สำคัญ! ป้องกัน 468 แถว → 108 ราย) =====
+      // ถ้า import ผู้ป่วย: dedupe ตาม CID (ถ้าไม่มี CID ใช้ HN)
+      // เก็บแถวแรกของแต่ละคน, รวมข้อมูลจาก duplicate entries (บางครั้ง lab date อยู่หลายแถว)
+      if (importMode === 'patient') {
+        const seenKeys = {};
+        const uniqueRows = [];
+        const duplicates = [];
+        for (let i = 0; i < rawRows.length; i++) {
+          const r = rawRows[i];
+          const cid = String(r.cid || r.CID || '').trim();
+          const hn = String(r.hn || r.HN || '').trim();
+          const key = cid || ('HN:' + hn);
+          if (!cid && !hn) {
+            duplicates.push({ rowNum: i + 1, reason: 'ไม่มี CID/HN' });
+            continue;
+          }
+          if (seenKeys[key] !== undefined) {
+            duplicates.push({ rowNum: i + 1, key: key, firstAt: seenKeys[key] + 1 });
+            // merge DiagnosisDate ถ้าของใหม่มีและของเดิมไม่มี
+            const firstIdx = seenKeys[key];
+            if (!uniqueRows[firstIdx].diagnosisDate && r.diagnosisDate) {
+              uniqueRows[firstIdx].diagnosisDate = r.diagnosisDate;
+            }
+            continue;
+          }
+          seenKeys[key] = uniqueRows.length;
+          uniqueRows.push(r);
+        }
+        importRows = uniqueRows;
+        window._importDuplicates = duplicates;
+        window._importRawCount = rawRows.length;
+      } else {
+        importRows = rawRows;
+        window._importDuplicates = [];
+        window._importRawCount = rawRows.length;
+      }
+
+      renderImportPreview();
+    } catch (err) {
+      showError('อ่านไฟล์ไม่สำเร็จ: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderImportPreview() {
+  const spec = IMPORT_SPECS[importMode];
+  const dupCount = (window._importDuplicates || []).length;
+  const rawCount = window._importRawCount || importRows.length;
+
+  document.getElementById('importCount').innerText = importRows.length;
+
+  // แสดง banner เตือนกรณีพบ duplicate (สำคัญ! ช่วยอธิบายกรณี 468 แถว → 108 ราย)
+  let dupBanner = document.getElementById('importDupBanner');
+  if (!dupBanner) {
+    dupBanner = document.createElement('div');
+    dupBanner.id = 'importDupBanner';
+    const previewEl = document.getElementById('importPreview');
+    if (previewEl) previewEl.parentNode.insertBefore(dupBanner, previewEl);
+  }
+  if (dupCount > 0 && importMode === 'patient') {
+    let dupList = '';
+    (window._importDuplicates || []).slice(0, 5).forEach(d => {
+      dupList += '<li>แถว ' + d.rowNum + ' ซ้ำกับแถว ' + (d.firstAt || '?') + ' (' + (d.key || '') + ')</li>';
+    });
+    if (dupCount > 5) dupList += '<li>...และอีก ' + (dupCount - 5) + ' แถว</li>';
+    dupBanner.innerHTML = '<div class="alert alert-warning mb-2">'
+      + '<strong><i class="bi bi-exclamation-triangle-fill"></i> พบแถวซ้ำในไฟล์ Excel</strong><br>'
+      + 'ทั้งหมด <strong>' + rawCount + '</strong> แถว → ผู้ป่วยไม่ซ้ำ <strong>' + importRows.length + '</strong> ราย '
+      + '(ซ้ำ <strong>' + dupCount + '</strong> แถว - จะข้ามอัตโนมัติ)'
+      + '<ul class="mb-0 small mt-2">' + dupList + '</ul>'
+      + '</div>';
+    dupBanner.style.display = 'block';
+  } else {
+    dupBanner.innerHTML = '';
+    dupBanner.style.display = 'none';
+  }
+
+  if (importRows.length === 0) {
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('btnStartImport').disabled = true;
+    return;
+  }
+
+  const cols = spec.previewCols.filter(c => importRows[0].hasOwnProperty(c));
+  let html = '<thead class="table-light"><tr><th>#</th>';
+  cols.forEach(c => html += '<th>' + c + '</th>');
+  html += '</tr></thead><tbody>';
+  const maxPreview = Math.min(10, importRows.length);
+  for (let i = 0; i < maxPreview; i++) {
+    html += '<tr><td>' + (i + 1) + '</td>';
+    cols.forEach(c => {
+      let v = importRows[i][c] || '';
+      if (typeof v === 'string' && v.length > 40) v = v.substring(0, 40) + '...';
+      html += '<td>' + v + '</td>';
+    });
+    html += '</tr>';
+  }
+  html += '</tbody>';
+  if (importRows.length > maxPreview) {
+    html += '<tfoot><tr><td colspan="' + (cols.length + 1) + '" class="text-center text-muted small">... และอีก ' + (importRows.length - maxPreview) + ' แถว</td></tr></tfoot>';
+  }
+  document.getElementById('importTable').innerHTML = html;
+  document.getElementById('importPreview').style.display = 'block';
+  document.getElementById('btnStartImport').disabled = false;
+}
+
+async function startImport() {
+  if (importRows.length === 0) return;
+  const spec = IMPORT_SPECS[importMode];
+
+  const confirm = await Swal.fire({
+    icon: 'question',
+    title: 'ยืนยันการนำเข้า?',
+    text: 'กำลังจะนำเข้า ' + importRows.length + ' แถวเข้าสู่ระบบ',
+    showCancelButton: true,
+    confirmButtonText: 'ยืนยัน',
+    cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#1a8754'
+  });
+  if (!confirm.isConfirmed) return;
+
+  document.getElementById('btnStartImport').disabled = true;
+  document.getElementById('importProgress').style.display = 'block';
+  document.getElementById('importResult').innerHTML = '';
+
+  // POST ไม่มี URL length limit → ใช้ batch ใหญ่ได้
+  const BATCH_SIZE = 50;
+  const totalBatch = Math.ceil(importRows.length / BATCH_SIZE);
+  let totalCreated = 0, totalUpdated = 0, totalSkipped = 0, totalDupInBatch = 0, totalReceived = 0;
+  const allErrors = [];
+
+  for (let b = 0; b < totalBatch; b++) {
+    const batch = importRows.slice(b * BATCH_SIZE, (b + 1) * BATCH_SIZE);
+    const pct = Math.round(((b + 1) / totalBatch) * 100);
+    document.getElementById('importProgressLabel').innerText =
+      'กำลังนำเข้า batch ' + (b + 1) + '/' + totalBatch + ' (' + batch.length + ' แถว)';
+    document.getElementById('importProgressBar').style.width = pct + '%';
+    document.getElementById('importProgressBar').innerText = pct + '%';
+
+    try {
+      // ใช้ POST (ไม่มี URL length limit + retry อัตโนมัติ)
+      // batchId สำหรับ idempotency (ส่ง batch.length+batchNo ซ้ำจะยังทำงานถูก เพราะ upsert)
+      const r = await postJson({
+        action: spec.action,
+        token: currentUser.token,
+        data: JSON.stringify(batch),
+        batchNo: b + 1,
+        totalBatch: totalBatch,
+        batchId: 'B' + Date.now() + '_' + (b + 1)
+      }, 2);
+      if (r.success) {
+        totalCreated += r.data.created || 0;
+        totalUpdated += r.data.updated || 0;
+        totalSkipped += r.data.skipped || 0;
+        totalDupInBatch += r.data.duplicateInBatch || 0;
+        totalReceived += r.data.rowsReceived || batch.length;
+        if (r.data.errors) allErrors.push(...r.data.errors);
+      } else {
+        allErrors.push('Batch ' + (b + 1) + ': ' + r.message);
+        totalSkipped += batch.length;
+      }
+    } catch (err) {
+      allErrors.push('Batch ' + (b + 1) + ' error: ' + err.message);
+      totalSkipped += batch.length;
+    }
+  }
+
+  document.getElementById('importProgressLabel').innerText = 'เสร็จสิ้น';
+  const dupCount = (window._importDuplicates || []).length;
+  const rawCount = window._importRawCount || importRows.length;
+
+  let resultHtml = '<div class="alert alert-success">';
+  resultHtml += '<h6><i class="bi bi-check-circle-fill"></i> นำเข้าเสร็จสิ้น</h6>';
+  resultHtml += '<ul class="mb-0">';
+  if (importMode === 'patient') {
+    resultHtml += '<li>ไฟล์ Excel: <strong>' + rawCount + '</strong> แถว</li>';
+    if (dupCount > 0) {
+      resultHtml += '<li class="text-warning">ซ้ำในไฟล์ (รวมเป็นคนเดียวกัน): <strong>' + dupCount + '</strong> แถว</li>';
+    }
+    resultHtml += '<li>ส่งไปเซิร์ฟเวอร์: <strong>' + totalReceived + '</strong> แถว</li>';
+    resultHtml += '<li class="text-success">เพิ่มผู้ป่วยใหม่: <strong>' + totalCreated + '</strong> ราย</li>';
+    resultHtml += '<li>อัปเดตผู้ป่วยเดิม: <strong>' + totalUpdated + '</strong> ราย</li>';
+    if (totalDupInBatch > 0) {
+      resultHtml += '<li class="text-muted">ซ้ำระหว่าง batch: <strong>' + totalDupInBatch + '</strong> แถว</li>';
+    }
+    resultHtml += '<li><strong>รวมผู้ป่วยในระบบที่ถูกบันทึก: ' + (totalCreated + totalUpdated) + ' ราย</strong></li>';
+  } else {
+    resultHtml += '<li>บันทึก Lab: <strong>' + totalCreated + '</strong> รายการ</li>';
+  }
+  resultHtml += '<li>ข้าม/ผิดพลาด: <strong>' + totalSkipped + '</strong> แถว</li>';
+  resultHtml += '</ul></div>';
+
+  if (allErrors.length > 0) {
+    resultHtml += '<div class="alert alert-warning small"><strong>รายการข้าม (' + allErrors.length + '):</strong><ul class="mb-0" style="max-height:200px;overflow-y:auto;">';
+    allErrors.slice(0, 50).forEach(err => { resultHtml += '<li>' + err + '</li>'; });
+    resultHtml += '</ul></div>';
+  }
+
+  document.getElementById('importResult').innerHTML = resultHtml;
+  showSuccess('นำเข้าสำเร็จ ' + (totalCreated + totalUpdated) + ' แถว');
+  loadPatients();
+}
+
+// Auto-calculate age from birthdate
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'pf_BirthDate') {
+    const bd = new Date(e.target.value);
+    if (!isNaN(bd.getTime())) {
+      const ageDif = Date.now() - bd.getTime();
+      const ageDate = new Date(ageDif);
+      document.getElementById('pf_Age').value = Math.abs(ageDate.getUTCFullYear() - 1970);
+    }
+  }
+});
+
+/* ============================================================ */
+/* ============= USER REGISTRATION & APPROVAL ================= */
+/* ============================================================ */
+
+// ---------- หมู่บ้าน helper ----------
+function fillVillageOptions(selectEl, includeAll) {
+  selectEl.innerHTML = '';
+  if (includeAll) {
+    const opt = document.createElement('option');
+    opt.value = '0'; opt.innerText = '0 — ทั้งตำบล (เจ้าหน้าที่)';
+    selectEl.appendChild(opt);
+  }
+  for (let i = 1; i <= 12; i++) {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    const vname = (typeof VILLAGES !== 'undefined' && VILLAGES[String(i)]) ? VILLAGES[String(i)] : ('หมู่ ' + i);
+    opt.innerText = vname;
+    selectEl.appendChild(opt);
+  }
+}
+
+// ---------- Register ----------
+function openRegisterModal() {
+  ['regFullName','regPhone','regUsername','regPassword','regPasswordConfirm'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('regRole').value = 'osm';
+  fillVillageOptions(document.getElementById('regVillage'), true);
+  document.getElementById('regVillage').value = '1';
+  onRegRoleChange();
+  new bootstrap.Modal(document.getElementById('registerModal')).show();
+}
+
+function onRegRoleChange() {
+  const role = document.getElementById('regRole').value;
+  const wrap = document.getElementById('regVillageWrap');
+  const vSel = document.getElementById('regVillage');
+  if (role === 'viewer' || role === 'staff') {
+    // ผู้บริหาร/staff เห็นทั้งตำบล
+    vSel.value = '0';
+    wrap.style.display = role === 'staff' ? 'none' : '';
+    if (role === 'viewer') wrap.style.display = 'none';
+  } else {
+    wrap.style.display = '';
+    if (vSel.value === '0') vSel.value = '1';
+  }
+}
+
+async function doRegister() {
+  const fullName = document.getElementById('regFullName').value.trim();
+  const phone = document.getElementById('regPhone').value.trim();
+  const username = document.getElementById('regUsername').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const confirmPw = document.getElementById('regPasswordConfirm').value;
+  const role = document.getElementById('regRole').value;
+  const village = role === 'viewer' || role === 'staff' ? '0' : document.getElementById('regVillage').value;
+
+  if (!fullName || !phone || !username || !password) { showError('กรุณากรอกข้อมูลให้ครบ'); return; }
+  if (!/^[0-9]{9,10}$/.test(phone.replace(/[^0-9]/g, ''))) { showError('เบอร์โทรศัพท์ไม่ถูกต้อง (9-10 หลัก)'); return; }
+  if (password.length < 6) { showError('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร'); return; }
+  if (password !== confirmPw) { showError('รหัสผ่านยืนยันไม่ตรงกัน'); return; }
+
+  showLoading('กำลังส่งคำขอ...');
+  try {
+    const r = await postJson({
+      action: 'registerUser',
+      fullName: fullName, phone: phone, username: username, password: password,
+      role: role, village: village
+    }, 1);
+    Swal.close();
+    if (r.success) {
+      bootstrap.Modal.getInstance(document.getElementById('registerModal')).hide();
+      Swal.fire({
+        icon: 'success',
+        title: 'สมัครสำเร็จ',
+        html: '<p>บัญชีของคุณถูกบันทึกแล้ว</p><p class="text-warning"><i class="bi bi-hourglass-split"></i> กรุณารอผู้ดูแลระบบอนุมัติก่อนเข้าใช้งาน</p>',
+        confirmButtonColor: '#1a8754'
+      });
+    } else {
+      showError(r.message || 'สมัครไม่สำเร็จ');
+    }
+  } catch (e) { Swal.close(); showError(e.toString()); }
+}
+
+// ---------- Change Password (self) ----------
+function openChangePasswordModal() {
+  ['cpOld','cpNew','cpNew2'].forEach(id => { document.getElementById(id).value = ''; });
+  new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+}
+
+async function doChangePassword() {
+  const oldPw = document.getElementById('cpOld').value;
+  const newPw = document.getElementById('cpNew').value;
+  const confirmPw = document.getElementById('cpNew2').value;
+  if (!oldPw || !newPw) { showError('กรุณากรอกข้อมูลให้ครบ'); return; }
+  if (newPw.length < 6) { showError('รหัสผ่านใหม่ต้องยาวอย่างน้อย 6 ตัวอักษร'); return; }
+  if (newPw !== confirmPw) { showError('รหัสผ่านยืนยันไม่ตรงกัน'); return; }
+
+  showLoading('กำลังเปลี่ยนรหัสผ่าน...');
+  try {
+    const r = await postJson({
+      action: 'changePassword',
+      token: currentUser.token,
+      oldPassword: oldPw, newPassword: newPw
+    }, 1);
+    Swal.close();
+    if (r.success) {
+      bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+      showSuccess(r.message);
+    } else {
+      showError(r.message);
+    }
+  } catch (e) { Swal.close(); showError(e.toString()); }
+}
+
+/* ============================================================ */
+/* ================= ADMIN USER MANAGEMENT ==================== */
+/* ============================================================ */
+let _allUsers = [];
+
+async function loadPendingBadge() {
+  if (!currentUser || currentUser.role !== 'admin') return;
+  try {
+    const r = await jsonp({ action: 'getPendingUsers', token: currentUser.token });
+    if (r.success) {
+      const n = (r.data || []).length;
+      const badge = document.getElementById('pendingBadge');
+      const tabBadge = document.getElementById('tabPendingBadge');
+      if (badge) { badge.innerText = n; badge.style.display = n > 0 ? '' : 'none'; }
+      if (tabBadge) tabBadge.innerText = n;
+    }
+  } catch (e) {}
+}
+
+async function loadUsersPage() {
+  switchUserTab('pending');
+  await Promise.all([loadPendingUsers(), loadAllUsers()]);
+}
+
+function switchUserTab(tab, ev) {
+  document.querySelectorAll('.user-tab-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('#userTabs .nav-link').forEach(b => b.classList.remove('active'));
+  document.getElementById('userTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+  if (ev && ev.currentTarget) ev.currentTarget.classList.add('active');
+  else document.querySelector('#userTabs .nav-link').classList.add('active');
+}
+
+async function loadPendingUsers() {
+  try {
+    const r = await jsonp({ action: 'getPendingUsers', token: currentUser.token });
+    if (!r.success) { showError(r.message); return; }
+    const list = r.data || [];
+    const tbody = document.getElementById('pendingUsersTable');
+    const tabBadge = document.getElementById('tabPendingBadge');
+    const navBadge = document.getElementById('pendingBadge');
+    if (tabBadge) tabBadge.innerText = list.length;
+    if (navBadge) { navBadge.innerText = list.length; navBadge.style.display = list.length > 0 ? '' : 'none'; }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-check2-circle"></i> ไม่มีผู้ใช้รออนุมัติ</td></tr>';
+      return;
+    }
+    let html = '';
+    list.forEach(u => {
+      html += '<tr>';
+      html += '<td><strong>' + escapeHtml(u.Username) + '</strong></td>';
+      html += '<td>' + escapeHtml(u.FullName) + '</td>';
+      html += '<td>' + escapeHtml(u.Phone) + '</td>';
+      html += '<td><span class="badge bg-secondary">' + roleLabel(u.Role) + '</span></td>';
+      html += '<td>' + (u.Village === '0' ? 'ทั้งตำบล' : ('หมู่ ' + u.Village)) + '</td>';
+      html += '<td class="small text-muted">' + (u.CreatedAt || '') + '</td>';
+      html += '<td>'
+        + '<button class="btn btn-sm btn-success me-1" onclick="approveUser(\'' + u.UserID + '\', \'' + escapeJs(u.Username) + '\')"><i class="bi bi-check-lg"></i> อนุมัติ</button>'
+        + '<button class="btn btn-sm btn-outline-danger" onclick="rejectUser(\'' + u.UserID + '\', \'' + escapeJs(u.Username) + '\')"><i class="bi bi-x-lg"></i> ปฏิเสธ</button>'
+        + '</td>';
+      html += '</tr>';
+    });
+    tbody.innerHTML = html;
+  } catch (e) { showError(e.toString()); }
+}
+
+async function loadAllUsers() {
+  try {
+    const r = await jsonp({ action: 'getAllUsers', token: currentUser.token });
+    if (!r.success) { showError(r.message); return; }
+    _allUsers = r.data || [];
+    renderAllUsers();
+  } catch (e) { showError(e.toString()); }
+}
+
+function renderAllUsers() {
+  const s = (document.getElementById('userSearch').value || '').toLowerCase();
+  const tbody = document.getElementById('allUsersTable');
+  const rows = _allUsers.filter(u => {
+    if (!s) return true;
+    const searchStr = (u.Username + ' ' + u.FullName + ' ' + u.Phone).toLowerCase();
+    return searchStr.includes(s);
+  });
+  if (rows.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">ไม่พบผู้ใช้</td></tr>';
+    return;
+  }
+  let html = '';
+  rows.forEach(u => {
+    const statusBadge = {
+      pending: '<span class="badge bg-warning text-dark">รออนุมัติ</span>',
+      approved: '<span class="badge bg-success">อนุมัติแล้ว</span>',
+      rejected: '<span class="badge bg-danger">ปฏิเสธ</span>',
+      suspended: '<span class="badge bg-secondary">ระงับ</span>'
+    }[String(u.Status).toLowerCase()] || '<span class="badge bg-success">อนุมัติแล้ว</span>';
+
+    html += '<tr>';
+    html += '<td><strong>' + escapeHtml(u.Username) + '</strong></td>';
+    html += '<td>' + escapeHtml(u.FullName) + '</td>';
+    html += '<td>' + escapeHtml(u.Phone || '') + '</td>';
+    html += '<td>' + roleLabel(u.Role) + '</td>';
+    html += '<td>' + (u.Village === '0' ? 'ทั้งตำบล' : ('หมู่ ' + u.Village)) + '</td>';
+    html += '<td>' + statusBadge + '</td>';
+    html += '<td class="small text-muted">' + (u.LastLoginAt || '-') + '</td>';
+    html += '<td>';
+    html += '<button class="btn btn-sm btn-outline-primary me-1" onclick="openEditUserModal(\'' + u.UserID + '\')" title="แก้ไข"><i class="bi bi-pencil"></i></button>';
+    if (u.Active) {
+      html += '<button class="btn btn-sm btn-outline-warning" onclick="toggleUserActive(\'' + u.UserID + '\', false, \'' + escapeJs(u.Username) + '\')" title="ระงับ"><i class="bi bi-pause-circle"></i></button>';
+    } else {
+      html += '<button class="btn btn-sm btn-outline-success" onclick="toggleUserActive(\'' + u.UserID + '\', true, \'' + escapeJs(u.Username) + '\')" title="เปิดใช้งาน"><i class="bi bi-play-circle"></i></button>';
+    }
+    html += '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+}
+
+async function approveUser(userId, username) {
+  const r = await Swal.fire({
+    icon: 'question', title: 'อนุมัติ ' + username + '?',
+    showCancelButton: true, confirmButtonText: 'อนุมัติ', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#1a8754'
+  });
+  if (!r.isConfirmed) return;
+  showLoading('กำลังอนุมัติ...');
+  try {
+    const res = await postJson({ action: 'approveUser', token: currentUser.token, userId: userId }, 1);
+    Swal.close();
+    if (res.success) { showSuccess(res.message); await loadUsersPage(); loadPendingBadge(); }
+    else showError(res.message);
+  } catch (e) { Swal.close(); showError(e.toString()); }
+}
+
+async function rejectUser(userId, username) {
+  const r = await Swal.fire({
+    icon: 'warning', title: 'ปฏิเสธ ' + username + '?',
+    input: 'text', inputLabel: 'เหตุผล (ไม่บังคับ)',
+    showCancelButton: true, confirmButtonText: 'ปฏิเสธ', cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: '#dc3545'
+  });
+  if (!r.isConfirmed) return;
+  showLoading('กำลังปฏิเสธ...');
+  try {
+    const res = await postJson({ action: 'rejectUser', token: currentUser.token, userId: userId, reason: r.value || '' }, 1);
+    Swal.close();
+    if (res.success) { showSuccess(res.message); await loadUsersPage(); loadPendingBadge(); }
+    else showError(res.message);
+  } catch (e) { Swal.close(); showError(e.toString()); }
+}
+
+async function toggleUserActive(userId, active, username) {
+  const actionText = active ? 'เปิดใช้งาน' : 'ระงับ';
+  const r = await Swal.fire({
+    icon: 'question', title: actionText + ' ' + username + '?',
+    showCancelButton: true, confirmButtonText: actionText, cancelButtonText: 'ยกเลิก',
+    confirmButtonColor: active ? '#1a8754' : '#dc3545'
+  });
+  if (!r.isConfirmed) return;
+  showLoading('กำลัง' + actionText + '...');
+  try {
+    const res = await postJson({ action: 'setUserActive', token: currentUser.token, userId: userId, active: active ? 'true' : 'false' }, 1);
+    Swal.close();
+    if (res.success) { showSuccess(res.message); await loadAllUsers(); }
+    else showError(res.message);
+  } catch (e) { Swal.close(); showError(e.toString()); }
+}
+
+function openEditUserModal(userId) {
+  const u = _allUsers.find(x => x.UserID === userId);
+  if (!u) return;
+  document.getElementById('euUserId').value = u.UserID;
+  document.getElementById('euDisplayName').innerText = u.FullName + ' (' + u.Username + ')';
+  document.getElementById('euRole').value = u.Role;
+  fillVillageOptions(document.getElementById('euVillage'), true);
+  document.getElementById('euVillage').value = String(u.Village || '0');
+  document.getElementById('euNewPassword').value = '';
+  new bootstrap.Modal(document.getElementById('editUserModal')).show();
+}
+
+async function saveUserEdit() {
+  const userId = document.getElementById('euUserId').value;
+  const role = document.getElementById('euRole').value;
+  const village = document.getElementById('euVillage').value;
+  const newPw = document.getElementById('euNewPassword').value;
+
+  showLoading('กำลังบันทึก...');
+  try {
+    // อัปเดต role/village
+    const r1 = await postJson({ action: 'updateUserRole', token: currentUser.token, userId: userId, role: role, village: village }, 1);
+    if (!r1.success) { Swal.close(); showError(r1.message); return; }
+
+    // รีเซ็ตรหัสผ่านถ้ากรอก
+    if (newPw) {
+      if (newPw.length < 6) { Swal.close(); showError('รหัสผ่านต้องยาวอย่างน้อย 6 ตัวอักษร'); return; }
+      const r2 = await postJson({ action: 'resetUserPassword', token: currentUser.token, userId: userId, newPassword: newPw }, 1);
+      if (!r2.success) { Swal.close(); showError(r2.message); return; }
+    }
+    Swal.close();
+    bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+    showSuccess('บันทึกเรียบร้อย');
+    await loadAllUsers();
+  } catch (e) { Swal.close(); showError(e.toString()); }
+}
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+function escapeJs(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+</script>
+</body>
+</html>
